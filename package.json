@@ -1,0 +1,29 @@
+{
+  "name": "phaser-3-prototypes",
+  "version": "1.0.0",
+  "description": "Random game ideas and POCs prototyped in Phaser 3",
+  "main": "index.html",
+  "scripts": {
+    "web": "node ./node-webserver.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bdaenen/phaser-3-prototypes.git"
+  },
+  "keywords": [
+    "phaser3",
+    "phas3r"
+  ],
+  "author": "Benno Daenen <benno.daenen@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bdaenen/phaser-3-prototypes/issues"
+  },
+  "homepage": "https://github.com/bdaenen/phaser-3-prototypes#readme",
+  "dependencies": {
+    "connect": "^3.6.6",
+    "phaser": "^3.1.2",
+    "serve-static": "^1.13.2"
+  }
+}
