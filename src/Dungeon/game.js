@@ -7,6 +7,7 @@
     type: Phaser.AUTO,
     width: 960,
     height: 540,
+    pixelArt: true,
     physics: {
       default: 'arcade',
       arcade: {
@@ -22,13 +23,14 @@
     files: {
       images: [
         { key: 'placeholder', url: './assets/placeholder.png' },
-        { key: 'placeholder-borderless', url: './assets/placeholder_borderless.png' }
-        { key: 'maze64', url: './assets/maze_64.png' }
+        { key: 'placeholder-borderless', url: './assets/placeholder_borderless.png' },
+        { key: 'maze_64', url: './assets/maze_64.png' }
       ]
     }
   };
   var game = new Phaser.Game(config);
   var sqrt2 = Math.sqrt(2);
+  var map = null;
 
   var backgroundLayer = null;
   var objectLayer = null;
@@ -45,6 +47,7 @@
     config.files.images.forEach(function(file){
       this.load.image(file.key, file.url);
     }, this);
+    this.load.tilemapTiledJSON('map', 'assets/dungeon.json');
   }
 
   function create ()
@@ -53,9 +56,25 @@
     objectLayer = this.add.group();
     foregroundLayer = this.add.group();
     player = this.physics.add.sprite(100, 450, 'placeholder');
+    player.scaleX = 0.75;
+    player.scaleY = 0.75;
     objectLayer.add(player);
-    player.setCollideWorldBounds(true);
+    player.x = 150;
+    player.y = 2550;
+    console.log(player);
+    // Figure out why this doesn't work.
+//    player.setCollideWorldBounds(true);
+
     keys = this.input.keyboard.createCursorKeys();
+
+    map = this.make.tilemap({ key: 'map' });
+    var tiles = map.addTilesetImage('maze_64');
+    var layer = map.createStaticLayer('Tilelaag 1', tiles, 0, 0);
+
+    map.setCollision(1);
+    this.physics.add.collider(player, layer);
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.cameras.main.startFollow(player);
 
   }
 
