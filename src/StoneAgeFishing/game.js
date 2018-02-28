@@ -35,12 +35,6 @@
 
   function create ()
   {
-    // var myBitmap = game.add.bitmapData(1920, 1200);
-    // var grd = myBitmap.context.createLinearGradient(0, 0, 0, 1920);
-    //
-    // grd.addColorStop(0, "#37ecba");
-    // grd.addColorStop(1, "#72afd3");
-
     var cursors = this.input.keyboard.createCursorKeys();
 
     var controlConfig = {
@@ -60,11 +54,48 @@
 
     var cam = this.cameras.main;
 
+    // var sunLayer = this.add.graphics({ fillStyle: { color: 0xFFFFFF } });
+    // sunLayer.fillRectShape(new Phaser.Geom.Rectangle(0, 0, 5000, 5000));
+
+    var wavesTexture = this.add.tileSprite(
+        512, 512,
+        5000, 5000,
+        'waves'
+    );
+
+    // wavesTexture.alpha = 0.5;
+
     oceanFloorTexture = this.add.tileSprite(
         512, 512,
         5000, 5000,
         'ocean-floor'
     );
+
+    oceanFloorTexture.setScrollFactor(0.25);
+
+    var circle = new Phaser.Geom.Circle(400, 300, 200);
+
+    var visibilityMask = this.make.graphics();
+    visibilityMask.fillCircleShape(circle);
+
+    var rectangle = new Phaser.Geom.Rectangle(400 / 2, 300 / 2, 300, 300);
+
+    // visibilityMask.fillRectShape(rectangle);
+
+    // visibilityMask.alpha = 1;
+    // visibilityMask.setScrollFactor = 0;
+
+    oceanFloorTexture.mask = new Phaser.Display.Masks.BitmapMask(this, visibilityMask);
+
+    visibilityMask.setScrollFactor(0);
+
+    var wavesTextureForground = this.add.tileSprite(
+        512, 512,
+        5000, 5000,
+        'waves'
+    );
+
+    wavesTextureForground.alpha = 0.5;
   }
 
   function update (time, delta)
