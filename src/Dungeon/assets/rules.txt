@@ -1,0 +1,2 @@
+automap_collision.tmx
+automap_collision_object.tmx

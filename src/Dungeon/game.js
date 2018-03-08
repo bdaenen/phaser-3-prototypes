@@ -6,7 +6,8 @@
   var config = {
     type: Phaser.AUTO,
     width: 960,
-    height: 540,
+    height: 544,
+    pixelArt: true,
     physics: {
       default: 'arcade',
       arcade: {
@@ -22,13 +23,14 @@
     files: {
       images: [
         { key: 'placeholder', url: './assets/placeholder.png' },
-        { key: 'placeholder-borderless', url: './assets/placeholder_borderless.png' }
-        { key: 'maze64', url: './assets/maze_64.png' }
+        { key: 'placeholder-borderless', url: './assets/placeholder_borderless.png' },
+        { key: 'dungeon', url: './assets/dungeon.png' }
       ]
     }
   };
   var game = new Phaser.Game(config);
   var sqrt2 = Math.sqrt(2);
+  var map = null;
 
   var backgroundLayer = null;
   var objectLayer = null;
@@ -45,23 +47,49 @@
     config.files.images.forEach(function(file){
       this.load.image(file.key, file.url);
     }, this);
+    this.load.tilemapTiledJSON('map', 'assets/dungeon1_reworked.json');
   }
 
   function create ()
   {
+    map = this.make.tilemap({ key: 'map' });
+    var tiles = map.addTilesetImage('dungeon');
+    var bgLayer = map.createStaticLayer('bg', tiles, 0, 0);
+    var collisionLayer = map.createStaticLayer('collision', tiles, 0, 0);
+    collisionLayer.visible = false;
     backgroundLayer = this.add.group();
     objectLayer = this.add.group();
     foregroundLayer = this.add.group();
     player = this.physics.add.sprite(100, 450, 'placeholder');
+    player.scaleX = 0.75;
+    player.scaleY = 0.75;
+
+    console.log(player);
+
     objectLayer.add(player);
-    player.setCollideWorldBounds(true);
+    player.x = 100;
+    player.y = 100;
+
+    // Scaling bug?
+    player.body.offset.x = 0.20 * player.width;
+    player.body.offset.y = 0.20 * player.height;
+
     keys = this.input.keyboard.createCursorKeys();
+    collisionLayer.setCollision(235);
+    var doorKeys = map.createFromObjects('objects', 4, { key: 'placeholder' });
+    var spawn = map.createFromObjects('objects', 2, { key: 'placeholder_borderless' });
+
+    this.physics.add.collider(player, collisionLayer);
+    this.cameras.main.roundPixels = true;
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    //this.cameras.main.startFollow(player);
 
   }
 
   function update ()
   {
     updateMovement();
+    updateCameraPosition(this.cameras.main);
   }
 
   function updateMovement() {
@@ -79,5 +107,27 @@
     }
     player.setVelocityX(xVelocity);
     player.setVelocityY(yVelocity);
+  }
+
+  function updateCameraPosition(cam) {
+    var bounds = {
+      xMin: cam.scrollX,
+      xMax: cam.scrollX + cam.width,
+      yMin: cam.scrollY,
+      yMax: cam.scrollY + cam.height
+    };
+    //cam.x--;
+    if (bounds.xMin > player.x) {
+      cam.scrollX -= cam.width;
+    }
+    if (bounds.xMax < player.x) {
+      cam.scrollX+= cam.width;
+    }
+    if (bounds.yMin > player.y) {
+      cam.scrollY -= cam.height;
+    }
+    if (bounds.yMax < player.y) {
+      cam.scrollY += cam.height;
+    }
   }
 }());
