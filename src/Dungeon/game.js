@@ -35,6 +35,7 @@
   var backgroundLayer = null;
   var objectLayer = null;
   var foregroundLayer = null;
+  var cameraMoving = false;
   var movementState = {
     up: false,
     down: false,
@@ -88,8 +89,13 @@
 
   function update ()
   {
+    if (cameraMoving) {
+      player.setVelocityX(0);
+      player.setVelocityY(0);
+      return;
+    }
     updateMovement();
-    updateCameraPosition(this.cameras.main);
+    updateCameraPosition(this.cameras.main, this);
   }
 
   function updateMovement() {
@@ -109,25 +115,52 @@
     player.setVelocityY(yVelocity);
   }
 
-  function updateCameraPosition(cam) {
+  function updateCameraPosition(cam, scene) {
     var bounds = {
       xMin: cam.scrollX,
       xMax: cam.scrollX + cam.width,
       yMin: cam.scrollY,
       yMax: cam.scrollY + cam.height
     };
+
+    var deltaX = 0;
+    var deltaY = 0;
+    var tween;
+
     //cam.x--;
     if (bounds.xMin > player.x) {
-      cam.scrollX -= cam.width;
+      deltaX = -cam.width;
     }
     if (bounds.xMax < player.x) {
-      cam.scrollX+= cam.width;
+      deltaX = cam.width;
     }
     if (bounds.yMin > player.y) {
-      cam.scrollY -= cam.height;
+      deltaY = -cam.height;
     }
     if (bounds.yMax < player.y) {
-      cam.scrollY += cam.height;
+      deltaY = cam.height;
+    }
+
+    if (deltaX) {
+      cameraMoving = true;
+      tween = scene.tweens.add({
+        targets: cam,
+        onComplete: function () { cameraMoving = false; },
+        props: {
+          scrollX: { value: cam.scrollX + deltaX, duration: 750, ease: 'Quad.easeOut' }
+        },
+      });
+    }
+
+    if (deltaY) {
+      cameraMoving = true;
+      tween = scene.tweens.add({
+        targets: cam,
+        onComplete: function () { cameraMoving = false; },
+        props: {
+          scrollY: { value: cam.scrollY + deltaY, duration: 750, ease: 'Quad.easeOut' }
+        },
+      });
     }
   }
 }());
