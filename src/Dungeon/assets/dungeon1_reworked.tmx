@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.1.2" orientation="orthogonal" renderorder="right-down" width="62" height="51" tilewidth="32" tileheight="32" infinite="0" nextobjectid="5">
+<map version="1.0" tiledversion="1.1.3" orientation="orthogonal" renderorder="right-down" width="62" height="51" tilewidth="32" tileheight="32" infinite="0" nextobjectid="10">
  <tileset firstgid="1" source="dungeon.tsx"/>
  <tileset firstgid="235" name="collision" tilewidth="32" tileheight="32" tilecount="4" columns="4">
   <image source="collision.png" width="128" height="32"/>
@@ -337,11 +337,7 @@
 </data>
  </layer>
  <objectgroup name="objects">
-  <object id="2" template="objects/spawn.tx" x="448" y="768"/>
-  <object id="4" template="objects/key.tx" x="448" y="192">
-   <properties>
-    <property name="sprite" value="key"/>
-   </properties>
-  </object>
+  <object id="6" name="key_top" type="key" x="449.333" y="224" width="30.6667" height="32"/>
+  <object id="8" name="spawn" type="spawn" x="457.333" y="805.333" width="41.3333" height="48"/>
  </objectgroup>
 </map>

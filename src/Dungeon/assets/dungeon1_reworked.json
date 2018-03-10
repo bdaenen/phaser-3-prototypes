@@ -81,24 +81,26 @@
          "name":"objects",
          "objects":[
                 {
-                 "id":2,
-                 "template":"objects\/spawn.tx",
-                 "x":448,
-                 "y":768
+                 "height":32,
+                 "id":6,
+                 "name":"key_top",
+                 "rotation":0,
+                 "type":"key",
+                 "visible":true,
+                 "width":30.6666666666667,
+                 "x":449.333333333333,
+                 "y":224
                 }, 
                 {
-                 "id":4,
-                 "properties":
-                    {
-                     "sprite":"key"
-                    },
-                 "propertytypes":
-                    {
-                     "sprite":"string"
-                    },
-                 "template":"objects\/key.tx",
-                 "x":448,
-                 "y":192
+                 "height":48,
+                 "id":8,
+                 "name":"spawn",
+                 "rotation":0,
+                 "type":"spawn",
+                 "visible":true,
+                 "width":41.3333333333333,
+                 "x":457.333333333333,
+                 "y":805.333333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -106,10 +108,10 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":5,
+ "nextobjectid":10,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.1.2",
+ "tiledversion":"1.1.3",
  "tileheight":32,
  "tilesets":[
         {

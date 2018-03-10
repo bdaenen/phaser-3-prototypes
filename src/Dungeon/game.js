@@ -1,8 +1,10 @@
 (function () {
   'use strict';
   var player;
+  var inited;
   var keys;
   var playerSpeed = 250;
+  var doorKeys;
   var config = {
     type: Phaser.AUTO,
     width: 960,
@@ -57,17 +59,19 @@
     var tiles = map.addTilesetImage('dungeon');
     var bgLayer = map.createStaticLayer('bg', tiles, 0, 0);
     var collisionLayer = map.createStaticLayer('collision', tiles, 0, 0);
+    var tileObjectLayer = map.createStaticLayer('object', tiles, 0, 0);
+
     collisionLayer.visible = false;
     backgroundLayer = this.add.group();
     objectLayer = this.add.group();
     foregroundLayer = this.add.group();
+
     player = this.physics.add.sprite(100, 450, 'placeholder');
     player.scaleX = 0.75;
     player.scaleY = 0.75;
 
-    console.log(player);
-
     objectLayer.add(player);
+    objectLayer.add(tileObjectLayer);
     player.x = 100;
     player.y = 100;
 
@@ -77,14 +81,38 @@
 
     keys = this.input.keyboard.createCursorKeys();
     collisionLayer.setCollision(235);
-    var doorKeys = map.createFromObjects('objects', 4, { key: 'placeholder' });
-    var spawn = map.createFromObjects('objects', 2, { key: 'placeholder_borderless' });
+    tileObjectLayer.setCollisionBetween(1, 1000);
+
+    doorKeys = map.createFromObjects('objects', 'key_top', { key: 'placeholder' });
+    var spawn = map.createFromObjects('objects', 'spawn', { key: 'placeholder-borderless' });
+
+    spawn.forEach(function(spawnNode){
+      spawnNode.visible = false;
+    });
+
+    doorKeys.forEach(createKey, this);
 
     this.physics.add.collider(player, collisionLayer);
+    this.physics.add.collider(player, tileObjectLayer);
     this.cameras.main.roundPixels = true;
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    //this.cameras.main.startFollow(player);
 
+
+    spawn = spawn[0];
+    if (spawn) {
+      player.x = spawn.x;
+      player.y = spawn.y;
+    }
+  }
+
+  function createKey(key) {
+    this.physics.world.enable(key);
+  }
+
+  function pickupKey(player, key) {
+    player.keys = player.keys || 0;
+    player.keys++;
+    key.destroy();
   }
 
   function update ()
@@ -96,6 +124,13 @@
     }
     updateMovement();
     updateCameraPosition(this.cameras.main, this);
+
+    doorKeys.forEach(function(key){
+      this.physics.world.overlap(player, key, pickupKey);
+    }, this);
+
+    // After the first update our game was fully "set up".
+    inited = true;
   }
 
   function updateMovement() {
@@ -147,7 +182,7 @@
         targets: cam,
         onComplete: function () { cameraMoving = false; },
         props: {
-          scrollX: { value: cam.scrollX + deltaX, duration: 750, ease: 'Quad.easeOut' }
+          scrollX: { value: cam.scrollX + deltaX, duration: inited ? 750 : 1, ease: 'Quad.easeOut' }
         },
       });
     }
@@ -158,7 +193,7 @@
         targets: cam,
         onComplete: function () { cameraMoving = false; },
         props: {
-          scrollY: { value: cam.scrollY + deltaY, duration: 750, ease: 'Quad.easeOut' }
+          scrollY: { value: cam.scrollY + deltaY, duration: inited ? 750 : 1, ease: 'Quad.easeOut' }
         },
       });
     }
