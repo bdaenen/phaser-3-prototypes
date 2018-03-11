@@ -3,8 +3,11 @@
   var player;
   var inited;
   var keys;
-  var playerSpeed = 250;
+  var playerSpeed = 225;
   var doorKeys;
+  var DEPTH_OBJECT = 5;
+  var DEPTH_BACKGROUND = 1;
+  var DEPTH_FOREGROUND = 10;
   var config = {
     type: Phaser.AUTO,
     width: 960,
@@ -34,9 +37,6 @@
   var sqrt2 = Math.sqrt(2);
   var map = null;
 
-  var backgroundLayer = null;
-  var objectLayer = null;
-  var foregroundLayer = null;
   var cameraMoving = false;
   var movementState = {
     up: false,
@@ -45,6 +45,9 @@
     right: false
   };
 
+  /**
+   * Preload assets
+   */
   function preload ()
   {
     config.files.images.forEach(function(file){
@@ -53,51 +56,54 @@
     this.load.tilemapTiledJSON('map', 'assets/dungeon1_reworked.json');
   }
 
+  /**
+   * Main create function
+   */
   function create ()
   {
+    createPlayer.call(this);
+    createTilemap.call(this);
+
+    keys = this.input.keyboard.createCursorKeys();
+    createCamera.call(this);
+  }
+
+  /**
+   * Create the p:ayer object
+   */
+  function createPlayer() {
+    player = this.physics.add.sprite(100, 450, 'placeholder');
+    player.scaleX = 0.50;
+    player.scaleY = 0.50;
+
+    player.setDepth(DEPTH_OBJECT);
+    player.x = 100;
+    player.y = 100;
+
+  }
+
+  /**
+   * Init the level and player position
+   */
+  function createTilemap() {
     map = this.make.tilemap({ key: 'map' });
     var tiles = map.addTilesetImage('dungeon');
     var bgLayer = map.createStaticLayer('bg', tiles, 0, 0);
     var collisionLayer = map.createStaticLayer('collision', tiles, 0, 0);
-    var tileObjectLayer = map.createStaticLayer('object', tiles, 0, 0);
+    var tileObjectLayer = map.createDynamicLayer('object', tiles, 0, 0);
 
     collisionLayer.visible = false;
-    backgroundLayer = this.add.group();
-    objectLayer = this.add.group();
-    foregroundLayer = this.add.group();
 
-    player = this.physics.add.sprite(100, 450, 'placeholder');
-    player.scaleX = 0.75;
-    player.scaleY = 0.75;
+    collisionLayer.setCollision(tilesetConfig.collision.collision);
+    tileObjectLayer.setCollision(tilesetConfig.dungeon.lockedDoors);
 
-    objectLayer.add(player);
-    objectLayer.add(tileObjectLayer);
-    player.x = 100;
-    player.y = 100;
-
-    // Scaling bug?
-    player.body.offset.x = 0.20 * player.width;
-    player.body.offset.y = 0.20 * player.height;
-
-    keys = this.input.keyboard.createCursorKeys();
-    collisionLayer.setCollision(235);
-    tileObjectLayer.setCollisionBetween(1, 1000);
-
-    doorKeys = map.createFromObjects('objects', 'key_top', { key: 'placeholder' });
-    var spawn = map.createFromObjects('objects', 'spawn', { key: 'placeholder-borderless' });
-
-    spawn.forEach(function(spawnNode){
-      spawnNode.visible = false;
-    });
-
+    doorKeys = map.createFromObjects('objects', 'key', { key: 'placeholder' });
     doorKeys.forEach(createKey, this);
 
     this.physics.add.collider(player, collisionLayer);
-    this.physics.add.collider(player, tileObjectLayer);
-    this.cameras.main.roundPixels = true;
-    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.physics.add.collider(player, tileObjectLayer, objectCollision);
 
-
+    var spawn = map.createFromObjects('objects', 'spawn', { key: 'placeholder-borderless' });
     spawn = spawn[0];
     if (spawn) {
       player.x = spawn.x;
@@ -105,23 +111,57 @@
     }
   }
 
-  function createKey(key) {
-    this.physics.world.enable(key);
+  /**
+   * Camera settings
+   */
+  function createCamera() {
+    this.cameras.main.roundPixels = true;
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
   }
 
+  /**
+   * Create a key object which can be picked up
+   * @param key
+   */
+  function createKey(key) {
+    this.physics.world.enable(key);
+    key.visible = true;
+    key.setDepth(DEPTH_FOREGROUND);
+  }
+
+  /**
+   * Callback for picking up a key
+   * @param player
+   * @param key
+   */
   function pickupKey(player, key) {
     player.keys = player.keys || 0;
     player.keys++;
     key.destroy();
   }
 
+  function objectCollision(player, objectTile) {
+    var index = objectTile.index;
+    if (tilesetConfig.dungeon.lockedDoors.indexOf(index) !== -1) {
+      player.keys--;
+
+      // TODO: this isn't the correct way
+      objectTile.index = 0;
+    }
+  }
+
+  /**
+   * Main update loop
+   */
   function update ()
   {
+    // Don't update while the camera scrolls.
     if (cameraMoving) {
       player.setVelocityX(0);
       player.setVelocityY(0);
       return;
     }
+
     updateMovement();
     updateCameraPosition(this.cameras.main, this);
 
@@ -133,6 +173,9 @@
     inited = true;
   }
 
+  /**
+   * Update the player's movement state
+   */
   function updateMovement() {
     movementState.up = keys.up.isDown;
     movementState.down = keys.down.isDown;
@@ -150,6 +193,12 @@
     player.setVelocityY(yVelocity);
   }
 
+  /**
+   * TODO: Only trigger one tween if the player is multiple screens away from 0, 0
+   * TODO: This will fix the camera initially scrolling to the spawn as well.
+   * @param cam
+   * @param scene
+   */
   function updateCameraPosition(cam, scene) {
     var bounds = {
       xMin: cam.scrollX,
@@ -162,7 +211,6 @@
     var deltaY = 0;
     var tween;
 
-    //cam.x--;
     if (bounds.xMin > player.x) {
       deltaX = -cam.width;
     }
