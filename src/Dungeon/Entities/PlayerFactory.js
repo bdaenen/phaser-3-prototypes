@@ -38,6 +38,7 @@
         },
         set: function(val) {
           this.setData('keys', val);
+          window.ui.text.key.setText(val);
         }
       }
     });

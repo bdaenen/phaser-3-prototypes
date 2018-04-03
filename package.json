@@ -23,7 +23,7 @@
   "homepage": "https://github.com/bdaenen/phaser-3-prototypes#readme",
   "dependencies": {
     "connect": "^3.6.6",
-    "phaser": "^3.1.2",
+    "phaser": "^3.3",
     "serve-static": "^1.13.2"
   }
 }

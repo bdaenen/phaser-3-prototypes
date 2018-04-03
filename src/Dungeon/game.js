@@ -9,6 +9,7 @@
   var DEPTH_BACKGROUND = 1;
   var DEPTH_FOREGROUND = 10;
   var playerFactory = null;
+  window.ui = {};
   var config = {
     type: Phaser.AUTO,
     width: 960,
@@ -30,7 +31,8 @@
       images: [
         { key: 'placeholder', url: './assets/placeholder.png' },
         { key: 'placeholder-borderless', url: './assets/placeholder_borderless.png' },
-        { key: 'dungeon', url: './assets/dungeon.png' }
+        { key: 'dungeon', url: './assets/dungeon.png' },
+        { key: 'key', url: './assets/key.png' }
       ]
     }
   };
@@ -68,10 +70,11 @@
 
     keys = this.input.keyboard.createCursorKeys();
     createCamera.call(this);
+    createUi.call(this);
   }
 
   /**
-   * Create the p:ayer object
+   * Create the player object
    */
   function createPlayer() {
     player = playerFactory.create(100, 100, 'placeholder', 0.5, 0.5, DEPTH_OBJECT);
@@ -92,7 +95,7 @@
     collisionLayer.setCollision(tilesetConfig.collision.collision);
     tileObjectLayer.setCollision(tilesetConfig.dungeon.lockedDoors);
 
-    doorKeys = map.createFromObjects('objects', 'key', { key: 'placeholder' });
+    doorKeys = map.createFromObjects('objects', 'key', { key: 'key' });
     doorKeys.forEach(createKey, this);
 
     this.physics.add.collider(player, collisionLayer);
@@ -112,6 +115,17 @@
   function createCamera() {
     this.cameras.main.roundPixels = true;
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+  }
+
+  function createUi() {
+    ui.text = {};
+    ui.text.key = this.add.text(this.cameras.main.width - 48, 0, '0', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
+    ui.text.key.setStroke('#000', 6);
+    ui.text.key.setScrollFactor(0);
+
+    ui.sprites = {};
+    ui.sprites.key = this.add.sprite(ui.text.key.x + 32, ui.text.key.y + 17, 'key');
+    ui.sprites.key.setScrollFactor(0);
   }
 
   /**
