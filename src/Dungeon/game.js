@@ -8,6 +8,7 @@
   var DEPTH_OBJECT = 5;
   var DEPTH_BACKGROUND = 1;
   var DEPTH_FOREGROUND = 10;
+  var playerFactory = null;
   var config = {
     type: Phaser.AUTO,
     width: 960,
@@ -61,6 +62,7 @@
    */
   function create ()
   {
+    playerFactory = new window.PlayerFactory(this);
     createPlayer.call(this);
     createTilemap.call(this);
 
@@ -72,14 +74,7 @@
    * Create the p:ayer object
    */
   function createPlayer() {
-    player = this.physics.add.sprite(100, 450, 'placeholder');
-    player.scaleX = 0.50;
-    player.scaleY = 0.50;
-
-    player.setDepth(DEPTH_OBJECT);
-    player.x = 100;
-    player.y = 100;
-
+    player = playerFactory.create(100, 100, 'placeholder', 0.5, 0.5, DEPTH_OBJECT);
   }
 
   /**
@@ -135,18 +130,21 @@
    * @param key
    */
   function pickupKey(player, key) {
-    player.keys = player.keys || 0;
     player.keys++;
     key.destroy();
   }
 
   function objectCollision(player, objectTile) {
     var index = objectTile.index;
-    if (tilesetConfig.dungeon.lockedDoors.indexOf(index) !== -1) {
+    if (tilesetConfig.dungeon.lockedDoors.indexOf(index) !== -1 && player.keys > 0) {
       player.keys--;
 
-      // TODO: this isn't the correct way
-      objectTile.index = 0;
+      // Remove all the tiles on an object layer in a 3x3 square around the opened door.
+      // This is required to remove both sides of a door.
+      var tiles = objectTile.tilemapLayer.getTilesWithin(objectTile.x - 1, objectTile.y - 1, 3, 3, {isColliding: true});
+      tiles.forEach(function(tile){
+        tile.tilemapLayer.removeTileAt(tile.x, tile.y);
+      }, this);
     }
   }
 
