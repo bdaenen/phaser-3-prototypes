@@ -12,9 +12,10 @@
    * @param scaleX
    * @param scaleY
    * @param depth
+   * @param ui
    * @param data
    */
-  window.PlayerFactory.prototype.create = function(x, y, spriteKey, scaleX, scaleY, depth, data) {
+  window.PlayerFactory.prototype.create = function(x, y, spriteKey, scaleX, scaleY, depth, ui, data) {
     var player = this.scene.physics.add.sprite(x, y, spriteKey || 'placeholder');
     data = data || {};
     player.scaleX = scaleX;
@@ -28,7 +29,7 @@
     }
 
     player.setDataEnabled();
-    player.setData('keys', data.keys || 10);
+    player.setData('keys', data.keys || 0);
 
     // Data mappings.
     Object.defineProperties(player, {
@@ -38,7 +39,7 @@
         },
         set: function(val) {
           this.setData('keys', val);
-          window.ui.text.key.setText(val);
+          ui.text.key.setText(val);
         }
       }
     });
