@@ -3,6 +3,8 @@
   var player;
   var inited;
   var keys;
+  var blocks;
+  var blockPads;
   var playerSpeed = 225;
   var doorKeys;
   var DEPTH_OBJECT = 5;
@@ -29,10 +31,13 @@
     },
     files: {
       images: [
-        { key: 'placeholder', url: './assets/placeholder.png' },
-        { key: 'placeholder-borderless', url: './assets/placeholder_borderless.png' },
-        { key: 'dungeon', url: './assets/dungeon.png' },
-        { key: 'key', url: './assets/key.png' }
+        { key: 'placeholder', url: 'placeholder.png' },
+        { key: 'placeholder-borderless', url: 'placeholder_borderless.png' },
+        { key: 'dungeon', url: 'dungeon.png' },
+        { key: 'key', url: 'key.png' }
+      ],
+      spritesheet: [
+        { key: 'dungeon-sprite', url: 'dungeon.png', config: { frameWidth: 32, frameHeight: 32 } }
       ]
     }
   };
@@ -53,10 +58,15 @@
    */
   function preload ()
   {
+    this.load.setPath('./assets/');
     config.files.images.forEach(function(file){
       this.load.image(file.key, file.url);
     }, this);
-    this.load.tilemapTiledJSON('map', 'assets/dungeon1_reworked.json');
+    config.files.spritesheet.forEach(function(file){
+      this.load.spritesheet(file.key, file.url, file.config);
+    }, this);
+
+    this.load.tilemapTiledJSON('map', 'dungeon1_reworked.json');
   }
 
   /**
@@ -94,9 +104,15 @@
 
     collisionLayer.setCollision(tilesetConfig.collision.collision);
     tileObjectLayer.setCollision(tilesetConfig.dungeon.lockedDoors);
+    tileObjectLayer.setCollision(tilesetConfig.dungeon.puzzleDoors);
 
     doorKeys = map.createFromObjects('objects', 'key', { key: 'key' });
     doorKeys.forEach(createKey, this);
+
+    blockPads = map.createFromObjects('objects', 'blockPad', {key: 'dungeon-sprite', frame: 44});
+    blockPads.forEach(createBlockPad, this);
+    blocks = map.createFromObjects('objects', 'block', {key: 'dungeon-sprite', frame: 103});
+    blocks.forEach(createBlock, this);
 
     this.physics.add.collider(player, collisionLayer);
     this.physics.add.collider(player, tileObjectLayer, objectCollision);
@@ -139,6 +155,24 @@
   }
 
   /**
+   * Create a key object which can be picked up
+   * @param block
+   */
+  function createBlock(block) {
+    this.physics.world.enable(block);
+    block.setDepth(DEPTH_FOREGROUND);
+  }
+
+  /**
+   * Create a key object which can be picked up
+   * @param blockPad
+   */
+  function createBlockPad(blockPad) {
+    this.physics.world.enable(blockPad);
+    blockPad.setDepth(DEPTH_BACKGROUND);
+  }
+
+  /**
    * Callback for picking up a key
    * @param player
    * @param key
@@ -160,6 +194,9 @@
         tile.tilemapLayer.removeTileAt(tile.x, tile.y);
       }, this);
     }
+    else if (tilesetConfig.dungeon.puzzleDoors.indexOf(index) !== -1 && player.keys > 0) {
+
+    }
   }
 
   /**
@@ -179,6 +216,10 @@
 
     doorKeys.forEach(function(key){
       this.physics.world.overlap(player, key, pickupKey);
+    }, this);
+
+    blocks.forEach(function(block){
+      this.physics.world.collide(player, block);
     }, this);
 
     // After the first update our game was fully "set up".

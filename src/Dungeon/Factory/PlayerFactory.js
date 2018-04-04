@@ -28,7 +28,7 @@
     }
 
     player.setDataEnabled();
-    player.setData('keys', data.keys || 0);
+    player.setData('keys', data.keys || 10);
 
     // Data mappings.
     Object.defineProperties(player, {
