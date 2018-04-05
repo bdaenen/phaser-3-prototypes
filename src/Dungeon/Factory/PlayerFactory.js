@@ -44,6 +44,30 @@
       }
     });
 
+    this.initEvents(player);
+
     return player;
-  }
+  };
+
+  window.PlayerFactory.prototype.initEvents = function(player) {
+   /* var tilesetConfig = window.tilesetConfig[this.scene.tilesetName];
+    var tilemap = this.scene.sceneVars.map;
+    var moveRange = 1;
+    var margin = 5;
+    var blocks = this.scene.sceneVars.blocks;
+
+    this.scene.input.keyboard.on('keydown_X', function (event) {
+      var nearbyBlocks = [];
+      blocks.forEach(function(block){
+        // if block is nearby (check margin)
+        // nearbyBlocks.push();
+        // else, continue.
+
+      }, this);
+
+      // next, loop over nearby blocks and calculate in which direction they should move.
+      var playerTilePos = {x: (player.x / tilesetConfig.tileWidth), y: player.y / tilesetConfig.tileHeight};
+      console.log(playerTilePos, this.scene.sceneVars.map);
+    }, this);*/
+  };
 }());

@@ -3,6 +3,8 @@
   window.tilesetConfig = window.tilesetConfig || {};
 
   tilesetConfig.dungeon = {
+    'tileWidth': 32,
+    'tileHeight': 32,
     'block': 103,
     'blockPad': 44,
     'lockedDoors': [

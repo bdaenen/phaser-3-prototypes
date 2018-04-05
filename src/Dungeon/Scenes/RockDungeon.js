@@ -18,6 +18,8 @@
     cameraMoving: false
   };
 
+  RockDungeon.sceneVars = sceneVars;
+
   /**
    * @type {{images: [null,null,null,null], spritesheet: [null]}}
    */
@@ -32,6 +34,8 @@
       { key: 'dungeon-sprite', url: 'dungeon.png', config: { frameWidth: 32, frameHeight: 32 } }
     ]
   };
+
+  RockDungeon.tilesetName = 'dungeon';
 
   /**
    *
@@ -73,7 +77,7 @@
    */
   RockDungeon.createTilemap = function() {
     sceneVars.map = this.make.tilemap({ key: 'map' });
-    var tiles = sceneVars.map.addTilesetImage('dungeon');
+    var tiles = sceneVars.map.addTilesetImage(this.tilesetName);
     var bgLayer = sceneVars.map.createStaticLayer('bg', tiles, 0, 0);
     var collisionLayer = sceneVars.map.createStaticLayer('collision', tiles, 0, 0);
     var tileObjectLayer = sceneVars.map.createDynamicLayer('object', tiles, 0, 0);
@@ -81,19 +85,22 @@
     collisionLayer.visible = false;
 
     collisionLayer.setCollision(tilesetConfig.collision.collision);
-    tileObjectLayer.setCollision(tilesetConfig.dungeon.lockedDoors);
-    tileObjectLayer.setCollision(tilesetConfig.dungeon.puzzleDoors);
+    tileObjectLayer.setCollision(tilesetConfig[this.tilesetName].lockedDoors);
+    tileObjectLayer.setCollision(tilesetConfig[this.tilesetName].puzzleDoors);
 
     sceneVars.doorKeys = sceneVars.map.createFromObjects('objects', 'key', { key: 'key' });
     sceneVars.doorKeys.forEach(createKey, this);
 
-    sceneVars.blockPads = sceneVars.map.createFromObjects('objects', 'blockPad', {key: 'dungeon-sprite', frame: tilesetConfig.dungeon.blockPad});
+    sceneVars.blockPads = sceneVars.map.createFromObjects('objects', 'blockPad', {key: 'dungeon-sprite', frame: tilesetConfig[this.tilesetName].blockPad});
     sceneVars.blockPads.forEach(createBlockPad, this);
-    sceneVars.blocks = sceneVars.map.createFromObjects('objects', 'block', {key: 'dungeon-sprite', frame: tilesetConfig.dungeon.block});
+    sceneVars.blocks = sceneVars.map.createFromObjects('objects', 'block', {key: 'dungeon-sprite', frame: tilesetConfig[this.tilesetName].block});
     sceneVars.blocks.forEach(createBlock, this);
 
     this.physics.add.collider(sceneVars.player, collisionLayer);
-    this.physics.add.collider(sceneVars.player, tileObjectLayer, this.objectCollision);
+    this.physics.add.collider(sceneVars.player, tileObjectLayer, this.objectCollision, null, this);
+    this.physics.add.collider(sceneVars.blocks, sceneVars.blocks);
+    this.physics.add.collider(sceneVars.blocks, collisionLayer);
+    this.physics.add.collider(sceneVars.player, sceneVars.blocks);
 
     var spawn = sceneVars.map.createFromObjects('objects', 'spawn', { key: 'placeholder-borderless' });
     spawn = spawn[0];
@@ -143,6 +150,7 @@
   function createBlock(block) {
     this.physics.world.enable(block);
     block.setDepth(DEPTH_FOREGROUND);
+    block.body.setImmovable(true);
   }
 
   /**
@@ -170,7 +178,8 @@
    */
   RockDungeon.objectCollision = function(player, objectTile) {
     var index = objectTile.index;
-    if (tilesetConfig.dungeon.lockedDoors.indexOf(index) !== -1 && sceneVars.player.keys > 0) {
+    debugger;
+    if (window.tilesetConfig[this.tilesetName].lockedDoors.indexOf(index) !== -1 && sceneVars.player.keys > 0) {
       sceneVars.player.keys--;
 
       // Remove all the tiles on an object layer in a 3x3 square around the opened door.
@@ -180,7 +189,7 @@
         tile.tilemapLayer.removeTileAt(tile.x, tile.y);
       }, this);
     }
-    else if (tilesetConfig.dungeon.puzzleDoors.indexOf(index) !== -1 && sceneVars.player.keys > 0) {
+    else if (window.tilesetConfig[this.tilesetName].puzzleDoors.indexOf(index) !== -1 && sceneVars.player.keys > 0) {
 
     }
   };
@@ -203,13 +212,19 @@
       this.physics.world.overlap(sceneVars.player, key, pickupKey);
     }, this);
 
-    sceneVars.blocks.forEach(function(block){
-      this.physics.world.collide(sceneVars.player, block);
-    }, this);
+
+    // This is handled by the player's input events for now
+    //this.updateSkills();
 
     // After the first update our game was fully "set up".
     sceneVars.inited = true;
   };
+
+  /*RockDungeon.updateSkills = function() {
+    var player = sceneVars.player;
+    var blocks = sceneVars.blocks;
+
+  };*/
 
   /**
    * Update the player's movement state
