@@ -4,11 +4,26 @@
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
+/**
+ * @function getValue
+ * @since 3.0.0
+ * @private
+ */
 function getValue (node, attribute)
 {
     return parseInt(node.getAttribute(attribute), 10);
 }
 
+/**
+ * @function ParseXMLBitmapFont
+ * @since 3.0.0
+ * @private
+ *
+ * @param {XMLDocument} xml - [description]
+ * @param {integer} [xSpacing=0] - [description]
+ * @param {integer} [ySpacing=0] - [description]
+ * @param {Phaser.Textures.Frame} [frame] - [description]
+ */
 var ParseXMLBitmapFont = function (xml, xSpacing, ySpacing, frame)
 {
     if (xSpacing === undefined) { xSpacing = 0; }

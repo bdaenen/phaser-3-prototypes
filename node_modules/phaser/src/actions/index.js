@@ -13,6 +13,7 @@ module.exports = {
     Angle: require('./Angle'),
     Call: require('./Call'),
     GetFirst: require('./GetFirst'),
+    GetLast: require('./GetLast'),
     GridAlign: require('./GridAlign'),
     IncAlpha: require('./IncAlpha'),
     IncX: require('./IncX'),
@@ -24,6 +25,8 @@ module.exports = {
     PlaceOnRectangle: require('./PlaceOnRectangle'),
     PlaceOnTriangle: require('./PlaceOnTriangle'),
     PlayAnimation: require('./PlayAnimation'),
+    PropertyValueInc: require('./PropertyValueInc'),
+    PropertyValueSet: require('./PropertyValueSet'),
     RandomCircle: require('./RandomCircle'),
     RandomEllipse: require('./RandomEllipse'),
     RandomLine: require('./RandomLine'),
@@ -54,6 +57,7 @@ module.exports = {
     SmootherStep: require('./SmootherStep'),
     SmoothStep: require('./SmoothStep'),
     Spread: require('./Spread'),
-    ToggleVisible: require('./ToggleVisible')
+    ToggleVisible: require('./ToggleVisible'),
+    WrapInRectangle: require('./WrapInRectangle')
 
 };

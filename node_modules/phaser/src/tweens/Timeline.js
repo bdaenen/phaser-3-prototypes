@@ -291,7 +291,7 @@ var Timeline = new Class({
      * @method Phaser.Tweens.Timeline#add
      * @since 3.0.0
      *
-     * @param {[type]} config - [description]
+     * @param {object} config - [description]
      *
      * @return {Phaser.Tweens.Timeline} This Timeline object.
      */
@@ -306,7 +306,7 @@ var Timeline = new Class({
      * @method Phaser.Tweens.Timeline#queue
      * @since 3.0.0
      *
-     * @param {[type]} tween - [description]
+     * @param {Phaser.Tweens.Tween} tween - [description]
      *
      * @return {Phaser.Tweens.Timeline} This Timeline object.
      */
@@ -546,6 +546,21 @@ var Timeline = new Class({
     },
 
     /**
+     * Delegates #makeActive to the Tween manager.
+     *
+     * @method Phaser.Tweens.Timeline#makeActive
+     * @since 3.3.0
+     *
+     * @param {Phaser.Tweens.Tween} tween - The tween object to make active.
+     *
+     * @return {Phaser.Tweens.TweenManager} The Timeline's Tween Manager object.
+     */
+    makeActive: function (tween)
+    {
+        return this.manager.makeActive(tween);
+    },
+
+    /**
      * [description]
      *
      * @method Phaser.Tweens.Timeline#play
@@ -561,7 +576,7 @@ var Timeline = new Class({
         if (this.paused)
         {
             this.paused = false;
-        
+
             this.manager.makeActive(this);
 
             return;
@@ -823,7 +838,7 @@ var Timeline = new Class({
                 return true;
             }
         }
-        
+
         return false;
     },
 

@@ -4,11 +4,21 @@
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
+var CONST = require('./const');
+var Extend = require('../../utils/object/Extend');
+
+/**
+ * @callback ArcadePhysicsCallback
+ *
+ * @param {Phaser.GameObjects.GameObject} object1 - [description]
+ * @param {Phaser.GameObjects.GameObject} object2 - [description]
+ */
+
 /**
  * @namespace Phaser.Physics.Arcade
  */
 
-module.exports = {
+var Arcade = {
 
     ArcadePhysics: require('./ArcadePhysics'),
     Body: require('./Body'),
@@ -20,5 +30,10 @@ module.exports = {
     StaticBody: require('./StaticBody'),
     StaticGroup: require('./StaticPhysicsGroup'),
     World: require('./World')
-  
+
 };
+
+//   Merge in the consts
+Arcade = Extend(false, Arcade, CONST);
+
+module.exports = Arcade;
