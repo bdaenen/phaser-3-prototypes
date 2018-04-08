@@ -105,7 +105,8 @@
     var spawn = sceneVars.map.createFromObjects('objects', 'spawn', { key: 'placeholder-borderless' });
     spawn = spawn[0];
     if (spawn) {
-      sceneVars.player.x = spawn.x;
+      //sceneVars.player.x = spawn.x;
+      sceneVars.player.x = 1500;
       sceneVars.player.y = spawn.y;
     }
   };
@@ -178,7 +179,6 @@
    */
   RockDungeon.objectCollision = function(player, objectTile) {
     var index = objectTile.index;
-    debugger;
     if (window.tilesetConfig[this.tilesetName].lockedDoors.indexOf(index) !== -1 && sceneVars.player.keys > 0) {
       sceneVars.player.keys--;
 

@@ -29,7 +29,7 @@
     }
 
     player.setDataEnabled();
-    player.setData('keys', data.keys || 0);
+    player.setData('keys', data.keys || 9);
 
     // Data mappings.
     Object.defineProperties(player, {
@@ -50,24 +50,47 @@
   };
 
   window.PlayerFactory.prototype.initEvents = function(player) {
-   /* var tilesetConfig = window.tilesetConfig[this.scene.tilesetName];
+    var tilesetConfig = window.tilesetConfig[this.scene.tilesetName];
     var tilemap = this.scene.sceneVars.map;
-    var moveRange = 1;
     var margin = 5;
-    var blocks = this.scene.sceneVars.blocks;
+    var moveRange = tilesetConfig.tileWidth + margin;
 
     this.scene.input.keyboard.on('keydown_X', function (event) {
+      var blocks = this.scene.sceneVars.blocks;
       var nearbyBlocks = [];
+      var rect = new Phaser.Geom.Rectangle(player.x - moveRange, player.y - moveRange, moveRange*2, moveRange*2);
       blocks.forEach(function(block){
-        // if block is nearby (check margin)
-        // nearbyBlocks.push();
-        // else, continue.
-
+        if (rect.contains(block.x, block.y)) {
+          nearbyBlocks.push(block);
+        }
       }, this);
 
+      console.log(nearbyBlocks);
       // next, loop over nearby blocks and calculate in which direction they should move.
+      nearbyBlocks.forEach(function(block){
+        var deltaX = block.x - player.x;
+        var deltaY = block.y - player.y;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          if (deltaX > 0) {
+            block.x += tilesetConfig.tileWidth;
+          }
+          else if (deltaX < 0) {
+            block.x -= tilesetConfig.tileWidth;
+          }
+        }
+        else if (Math.abs(deltaY) > Math.abs(deltaX)) {
+          if (deltaY > 0) {
+            block.y += tilesetConfig.tileHeight;
+          }
+          else if (deltaY < 0) {
+            block.y -= tilesetConfig.tileHeight;
+          }
+        }
+
+
+      }, this);
       var playerTilePos = {x: (player.x / tilesetConfig.tileWidth), y: player.y / tilesetConfig.tileHeight};
-      console.log(playerTilePos, this.scene.sceneVars.map);
-    }, this);*/
+    }, this);
   };
 }());
