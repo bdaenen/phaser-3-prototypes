@@ -49,9 +49,11 @@
     return player;
   };
 
+  /**
+   * @param player
+   */
   window.PlayerFactory.prototype.initEvents = function(player) {
     var tilesetConfig = window.tilesetConfig[this.scene.tilesetName];
-    var tilemap = this.scene.sceneVars.map;
     var margin = 5;
     var moveRange = tilesetConfig.tileWidth + margin;
 
@@ -59,14 +61,15 @@
       var blocks = this.scene.sceneVars.blocks;
       var nearbyBlocks = [];
       var rect = new Phaser.Geom.Rectangle(player.x - moveRange, player.y - moveRange, moveRange*2, moveRange*2);
+
+      // Find nearby blocks
       blocks.forEach(function(block){
         if (rect.contains(block.x, block.y)) {
           nearbyBlocks.push(block);
         }
       }, this);
 
-      console.log(nearbyBlocks);
-      // next, loop over nearby blocks and calculate in which direction they should move.
+      // Move the nearby blocks in the correct direction
       nearbyBlocks.forEach(function(block){
         var deltaX = block.x - player.x;
         var deltaY = block.y - player.y;
@@ -88,9 +91,7 @@
           }
         }
 
-
       }, this);
-      var playerTilePos = {x: (player.x / tilesetConfig.tileWidth), y: player.y / tilesetConfig.tileHeight};
     }, this);
   };
 }());

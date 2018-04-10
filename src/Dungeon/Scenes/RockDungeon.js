@@ -15,7 +15,11 @@
     ui: {},
     playerSpeed: 225,
     sqrt2: Math.sqrt(2),
-    cameraMoving: false
+    cameraMoving: false,
+    blocksInRoom: [],
+    blockPadsInRoom: [],
+    roomSolved: false,
+    blockPadsSolvedInRoomCount: 0
   };
 
   RockDungeon.sceneVars = sceneVars;
@@ -79,8 +83,13 @@
     sceneVars.map = this.make.tilemap({ key: 'map' });
     var tiles = sceneVars.map.addTilesetImage(this.tilesetName);
     var bgLayer = sceneVars.map.createStaticLayer('bg', tiles, 0, 0);
+    sceneVars.tilemapBgLayer = bgLayer;
+
     var collisionLayer = sceneVars.map.createStaticLayer('collision', tiles, 0, 0);
+    sceneVars.tilemapCollisionLayer = collisionLayer;
+
     var tileObjectLayer = sceneVars.map.createDynamicLayer('object', tiles, 0, 0);
+    sceneVars.tilemapObjectLayer = tileObjectLayer;
 
     collisionLayer.visible = false;
 
@@ -163,6 +172,18 @@
     blockPad.setDepth(DEPTH_BACKGROUND);
   }
 
+  function markBlockPadDown(block, blockPad) {
+    if (!blockPad.isPushed) {
+      console.log('down!');
+      blockPad.isPushed = true;
+      blockPad.pushedBy = block;
+    }
+  }
+
+  function markBlockPadUp (block, blockPad) {
+    console.log('up!');
+  }
+
   /**
    * Callback for picking up a key
    * @param player
@@ -205,8 +226,19 @@
       return;
     }
 
-    updateMovement();
     updateCameraPosition(this.cameras.main, this);
+    updateBlockState.call(this);
+
+    if (!sceneVars.roomSolved) {
+      updateRoomSolved.call(this);
+      if (sceneVars.roomSolved) {
+        solveRoom.call(this);
+      }
+    }
+
+
+    updateMovement();
+
 
     sceneVars.doorKeys.forEach(function(key){
       this.physics.world.overlap(sceneVars.player, key, pickupKey);
@@ -225,6 +257,47 @@
     var blocks = sceneVars.blocks;
 
   };*/
+
+  function updateBlockState() {
+    var blockPadsInRoom = sceneVars.blockPadsInRoom;
+    var blocksInRoom = sceneVars.blocksInRoom;
+
+    blockPadsInRoom.splice(0, blockPadsInRoom.length);
+    blocksInRoom.splice(0, blocksInRoom.length);
+
+    sceneVars.blockPads.forEach(function(pad) {
+      pad.isPushed = false;
+      pad.pushedBy = null;
+      if (sceneVars.cameraBounds.contains(pad.x, pad.y)) {
+        blockPadsInRoom.push(pad);
+      }
+    });
+    sceneVars.blocks.forEach(function(block){
+      if (sceneVars.cameraBounds.contains(block.x, block.y)) {
+        blocksInRoom.push(block);
+      }
+    });
+
+    // TODO: refactor "count" to sceneVars.roomBlockPadSolvedCount
+    sceneVars.blockPadsSolvedInRoomCount = 0;
+    blockPadsInRoom.forEach(function(pad) {
+      blocksInRoom.forEach(function(block) {
+        var padBounds = pad.body.getBounds({});
+        var rect = new Phaser.Geom.Rectangle(padBounds.x, padBounds.y, padBounds.right - padBounds.x, padBounds.bottom - padBounds.y);
+        if (rect.contains(block.x, block.y)) {
+          sceneVars.blockPadsSolvedInRoomCount++;
+          pad.isPushed = true;
+          pad.pushedBy = block;
+        }
+      });
+    });
+  }
+
+  function updateRoomSolved() {
+    if (sceneVars.blockPadsInRoom.length) {
+      sceneVars.roomSolved = (sceneVars.blockPadsSolvedInRoomCount === sceneVars.blockPadsInRoom.length);
+    }
+  }
 
   /**
    * Update the player's movement state
@@ -264,6 +337,8 @@
       yMax: cam.scrollY + cam.height
     };
 
+    sceneVars.cameraBounds = new Phaser.Geom.Rectangle(bounds.xMin, bounds.yMin, bounds.xMax - bounds.xMin, bounds.yMax - bounds.yMin);
+
     var deltaX = 0;
     var deltaY = 0;
     var tween;
@@ -288,7 +363,7 @@
         onComplete: function () { sceneVars.cameraMoving = false; },
         props: {
           scrollX: { value: cam.scrollX + deltaX, duration: sceneVars.inited ? 750 : 1, ease: 'Quad.easeOut' }
-        },
+        }
       });
     }
 
@@ -299,9 +374,33 @@
         onComplete: function () { sceneVars.cameraMoving = false; },
         props: {
           scrollY: { value: cam.scrollY + deltaY, duration: sceneVars.inited ? 750 : 1, ease: 'Quad.easeOut' }
-        },
+        }
       });
     }
+
+    if (tween) {
+      // Reset room solving.
+      sceneVars.roomSolved = false;
+    }
+  }
+
+  function solveRoom () {
+    var tilesToCheck = sceneVars.tilemapObjectLayer.getTilesWithinWorldXY(
+      sceneVars.cameraBounds.x - 1,
+      sceneVars.cameraBounds.y - 1,
+      sceneVars.cameraBounds.width + 1,
+      sceneVars.cameraBounds.height + 1,
+      {isColliding: true}
+    );
+
+    var tilesetConfig = window.tilesetConfig[this.tilesetName];
+
+    tilesToCheck.forEach(function(tile){
+      if (tilesetConfig.puzzleDoors.indexOf(tile.index) !== -1) {
+        tile.tilemapLayer.removeTileAt(tile.x, tile.y);
+      }
+    }, this);
+
   }
 
 
