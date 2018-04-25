@@ -51,32 +51,70 @@
     var ui = sceneVars.ui;
     var atkX = 100;
     var atkY = 450;
-    var atkW = 128;
-    var atkH = 64;
+    var buttonW = 128;
+    var buttonH = 64;
 
     ui.graphics = {};
-    ui.graphics.attack = this.add.graphics();
-    ui.graphics.attack.fillStyle(0x000000);
-    ui.graphics.attack.fillRect(atkX, atkY, atkW, atkH);
-    ui.graphics.attack.lineStyle(2, 0xFFFFFF);
-    ui.graphics.attack.strokeRect(atkX, atkY, atkW, atkH);
-
-    ui.graphics.defend = this.add.graphics();
-    ui.graphics.defend.fillStyle(0x000000);
-    ui.graphics.defend.fillRect(atkX + atkW + 30, atkY, atkW, atkH);
-    ui.graphics.defend.lineStyle(2, 0xFFFFFF);
-    ui.graphics.defend.strokeRect(atkX + atkW + 30, atkY, atkW, atkH);
+    ui.graphics.attack = this.add.sprite(atkX, atkY, 'placeholder-borderless');
+    ui.graphics.attack.tint = 0x585858;
+    ui.graphics.attack.displayWidth = buttonW;
+    ui.graphics.defend = this.add.sprite(atkX + ui.graphics.attack.displayWidth + 30, atkY, 'placeholder-borderless');
+    ui.graphics.defend.tint = 0x585858;
+    ui.graphics.defend.displayWidth = buttonW;
 
 
     ui.text = {};
-    ui.text.attack = this.add.text(atkX + 30, atkY + 18, 'Attack', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
-    ui.text.defend = this.add.text(atkX + atkW + 55, atkY + 18, 'Defend', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
+    ui.text.attack = this.add.text(ui.graphics.attack.x, ui.graphics.attack.y, 'Attack', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
+    ui.text.attack.x -= ui.text.attack.width / 2;
+    ui.text.attack.y -= ui.text.attack.height / 2;
+
+    ui.text.defend = this.add.text(ui.graphics.defend.x, ui.graphics.defend.y, 'Defend', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
+    ui.text.defend.x -= ui.text.defend.width / 2;
+    ui.text.defend.y -= ui.text.defend.height / 2;
 
     ui.buttons = [];
     ui.buttons.push({box: ui.graphics.attack, text: ui.text.attack});
     ui.buttons.push({box: ui.graphics.defend, text: ui.text.defend});
 
-    ui.vars = {};
+    ui.vars = {
+      buttonW: buttonW,
+      buttonH: buttonH
+    };
+
+    this.input.keyboard.on('keydown_LEFT', function (event) {
+        ui.vars.activeIndex = Math.max(0, ui.vars.activeIndex-1);
+    });
+
+    this.input.keyboard.on('keydown_RIGHT', function (event) {
+        ui.vars.activeIndex = Math.min(ui.buttons.length-1, ui.vars.activeIndex+1);
+    });
+
+    this.input.keyboard.on('keydown_ENTER', function(event) {
+        this.activateSelectedMenuItem();
+    }, this);
+  };
+
+
+  Battle.defend = function() {
+    console.warn('Defending is not yet implemented');
+  };
+
+  /**
+   *
+   */
+  Battle.activateSelectedMenuItem = function() {
+    if (this.sceneVars.ui.activeIndex === 0) {
+      this.scene.pause();
+      this.scene.launch('drums');
+    }
+    if (this.sceneVars.ui.activeIndex === 1) {
+      // Defend
+      console.warn('Not Yet Implemented');
+    }
+    if (this.sceneVars.ui.activeIndex === 2) {
+      // Run
+      console.warn('Not Yet Implemented');
+    }
   };
 
   /**
@@ -86,6 +124,9 @@
     this.updateUi();
   };
 
+  /**
+   * Update UI
+   */
   Battle.updateUi = function() {
     var ui = sceneVars.ui;
 
@@ -97,13 +138,10 @@
     var activeText = ui.buttons[ui.vars.activeIndex].text;
 
     ui.buttons.forEach(function(btn){
-      btn.box.lineStyle(2, 0xFFFFFF);
-      //btn.text.lineStyle(2, 0xFFFFFF);
+      btn.box.tint = 0x585858;
     });
-
-    activeBox.lineStyle(2, 0x00FF00);
+    activeBox.tint = 0x0058FF;
   };
-
 
   window.BattleScene = Battle;
 }());
