@@ -108,7 +108,7 @@
   Drums.createInput = function() {
     this.input.keyboard.on('keydown_X', function (event) {
       sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
-      sceneVars.conga.triggerAttackRelease(100, "16n");
+      sceneVars.conga.triggerAttackRelease(100, "16n", Tone.context.currentTime + 0.025);
     });
   };
 
