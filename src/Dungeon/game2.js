@@ -12,7 +12,7 @@
         debug: true
       }
     },
-    scene: [window.RockDungeonScene, window.BattleScene, window.DrumsScene]
+    scene: [window.DrumsScene]
   };
 
   var game = new Phaser.Game(config);

@@ -114,8 +114,7 @@
     var spawn = sceneVars.map.createFromObjects('objects', 'spawn', { key: 'placeholder-borderless' });
     spawn = spawn[0];
     if (spawn) {
-      //sceneVars.player.x = spawn.x;
-      sceneVars.player.x = 1500;
+      sceneVars.player.x = spawn.x;
       sceneVars.player.y = spawn.y;
     }
   };
