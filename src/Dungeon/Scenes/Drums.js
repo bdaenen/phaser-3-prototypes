@@ -5,9 +5,9 @@
     movementState: {},
     assets: {},
     ui: {},
-    enemies: [],
     timeOff: 0,
-    curTime: 0
+    curTime: 0,
+    samples: {}
   };
 
   Drums.sceneVars = sceneVars;
@@ -33,16 +33,42 @@
     sceneVars.assets.images.forEach(function(file){
       this.load.image(file.key, file.url);
     }, this);
+
+    this.load.audio('snare', 'audio/drums/snare.ogg');
+    this.load.audio('crash', 'audio/drums/crash.ogg');
+    this.load.audio('hihat', 'audio/drums/hihat.ogg');
+    this.load.audio('kick', 'audio/drums/kick.ogg');
+    this.load.audio('tom02', 'audio/drums/tom02.ogg');
+    this.load.audio('tom03', 'audio/drums/tom03.ogg');
+    this.load.audio('tom04', 'audio/drums/tom04.ogg');
+    this.load.audio('tom05', 'audio/drums/tom05.ogg');
   };
 
   /**
    * Main create function
    */
   Drums.create = function() {
-    var ui = this.sceneVars.ui;
+    var ui = sceneVars.ui;
+    this.createSamples();
     this.createUi();
     this.createDrumPattern();
     this.createInput();
+  };
+
+  Drums.createSamples = function() {
+    sceneVars.samples = {
+      snare: this.sound.add('snare'),
+      tom1: this.sound.add('tom04'),
+      tom2: this.sound.add('tom05'),
+      kick: this.sound.add('kick'),
+      hihat: this.sound.add('hihat'),
+      crash: this.sound.add('crash')
+    };
+
+    sceneVars.samples.snare.volume = 0.3;
+    sceneVars.samples.hihat.volume = 0.3;
+    sceneVars.samples.crash.volume = 0.4;
+    sceneVars.samples.kick.volume = 0.4;
   };
 
   /**
@@ -64,32 +90,33 @@
    */
   Drums.createDrumPattern = function() {
     var ui = sceneVars.ui;
-    var conga = new Tone.MembraneSynth({
-      "pitchDecay" : 0.008,
-      "octaves" : 2,
-      "envelope" : {
-        "attack" : 0.0006,
-        "decay" : 0.5,
-        "sustain" : 0
-      }
-    }).toMaster();
+    var samples =  sceneVars.samples;
+    // var conga = new Tone.MembraneSynth({
+    //   "pitchDecay" : 0.008,
+    //   "octaves" : 2,
+    //   "envelope" : {
+    //     "attack" : 0.0006,
+    //     "decay" : 0.5,
+    //     "sustain" : 0
+    //   }
+    // }).toMaster();
+    //
+    // var conga2 = new Tone.MembraneSynth({
+    //   "pitchDecay" : 0.008,
+    //   "octaves" : 10,
+    //   "oscillator" : {
+    //     "type" : "sine"
+    //   },
+    //   "envelope" : {
+    //     "attack" : 0.0006,
+    //     "decay" : 0.1,
+    //     "sustain" : 0
+    //   }
+    // }).toMaster();
 
-    var conga2 = new Tone.MembraneSynth({
-      "pitchDecay" : 0.008,
-      "octaves" : 10,
-      "oscillator" : {
-        "type" : "sine"
-      },
-      "envelope" : {
-        "attack" : 0.0006,
-        "decay" : 0.1,
-        "sustain" : 0
-      }
-    }).toMaster();
+    var loop = new Tone.Pattern(function(time){
+      samples.hihat.play();
 
-    var loop = new Tone.Pattern(function(time, note){
-      conga.triggerAttackRelease(note, "16n", time);
-      // Draw.schedule takes a callback and a time to invoke the callback
       Tone.Draw.schedule(function(){
         sceneVars.curTime = window.performance.now();
         ui.graphics.beat.tint = 0x00FF00;
@@ -98,17 +125,29 @@
       Tone.Draw.schedule(function(){
         ui.graphics.beat.tint = 0xFFFFFF;
       }, time + 0.1);
-    }, ["B2"]).start(0);
+    }).start(0);
     loop.interval = "2n";
-    Tone.Transport.start("+0.1");
+    Tone.Transport.start("+0.01");
 
-    sceneVars.conga = conga2;
+    // sceneVars.conga = conga2;
   };
 
   Drums.createInput = function() {
     this.input.keyboard.on('keydown_X', function (event) {
       sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
-      sceneVars.conga.triggerAttackRelease(100, "16n", Tone.context.currentTime + 0.025);
+      sceneVars.samples.snare.play();
+    });
+    this.input.keyboard.on('keydown_C', function (event) {
+      sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
+      sceneVars.samples.tom1.play();
+    });
+    this.input.keyboard.on('keydown_V', function (event) {
+      sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
+      sceneVars.samples.tom2.play();
+    });
+    this.input.keyboard.on('keydown_SPACE', function (event) {
+      sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
+      sceneVars.samples.kick.play();
     });
   };
 
