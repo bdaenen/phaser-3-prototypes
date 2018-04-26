@@ -103,15 +103,18 @@
    *
    */
   Battle.activateSelectedMenuItem = function() {
-    if (this.sceneVars.ui.activeIndex === 0) {
-      this.scene.pause();
-      this.scene.launch('drums');
+    var activeIndex = sceneVars.ui.vars.activeIndex;
+    if (activeIndex === 0) {
+      console.log('drums');
+      this.scene.start('drums');
+      console.log(this.scene.isActive('drums'));
+      //this.scene.pause();
     }
-    if (this.sceneVars.ui.activeIndex === 1) {
+    if (activeIndex === 1) {
       // Defend
       console.warn('Not Yet Implemented');
     }
-    if (this.sceneVars.ui.activeIndex === 2) {
+    if (activeIndex === 2) {
       // Run
       console.warn('Not Yet Implemented');
     }
