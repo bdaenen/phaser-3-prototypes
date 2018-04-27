@@ -91,31 +91,11 @@
   Drums.createDrumPattern = function() {
     var ui = sceneVars.ui;
     var samples =  sceneVars.samples;
-    // var conga = new Tone.MembraneSynth({
-    //   "pitchDecay" : 0.008,
-    //   "octaves" : 2,
-    //   "envelope" : {
-    //     "attack" : 0.0006,
-    //     "decay" : 0.5,
-    //     "sustain" : 0
-    //   }
-    // }).toMaster();
-    //
-    // var conga2 = new Tone.MembraneSynth({
-    //   "pitchDecay" : 0.008,
-    //   "octaves" : 10,
-    //   "oscillator" : {
-    //     "type" : "sine"
-    //   },
-    //   "envelope" : {
-    //     "attack" : 0.0006,
-    //     "decay" : 0.1,
-    //     "sustain" : 0
-    //   }
-    // }).toMaster();
+    //var player = new Tone.Player('./assets/audio/drums/hihat.ogg').toMaster();
 
     var loop = new Tone.Pattern(function(time){
-      samples.hihat.play();
+    //  player.start();
+    //  samples.hihat.play();
 
       Tone.Draw.schedule(function(){
         sceneVars.curTime = window.performance.now();
@@ -127,9 +107,24 @@
       }, time + 0.1);
     }).start(0);
     loop.interval = "2n";
+
+    var kickPattern = "4n";
+    var kickLoop = new Tone.Pattern(function(time) {
+      Tone.Draw.schedule(function(){
+        var note = this.add.sprite(this.cameras.main.width, this.cameras.main.height/2, 'placeholder');
+        console.log(note);
+        var tween = this.tweens.add({
+          targets: note,
+          props: {
+            x: {value: '-=500', duration: 2000, ease: 'Linear'}
+          }
+        });
+      }.bind(this), time);
+    }.bind(this)).start(0);
+
+    kickLoop.interval = "4n";
     Tone.Transport.start("+0.01");
 
-    // sceneVars.conga = conga2;
   };
 
   Drums.createInput = function() {
