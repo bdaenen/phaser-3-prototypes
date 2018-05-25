@@ -7,7 +7,8 @@
     ui: {},
     timeOff: 0,
     curTime: 0,
-    samples: {}
+    samples: {},
+    score: 0
   };
 
   Drums.sceneVars = sceneVars;
@@ -77,11 +78,27 @@
   Drums.createUi = function() {
     var ui = sceneVars.ui;
     ui.graphics = {};
-    ui.graphics.beat = this.add.sprite(200, 200, 'placeholder-borderless');
-    ui.graphics.beat.tint = 0xFFFFFF;
+    ui.graphics.notes = {
+      kick: [],
+      snare: [],
+      tom1: [],
+      tom2: []
+    };
+/*    ui.graphics.beat = this.add.sprite(200, 200, 'placeholder-borderless');
+    ui.graphics.beat.tint = 0xFFFFFF;*/
+
+    ui.graphics.snare = this.add.sprite(300, 400, 'placeholder');
+    ui.graphics.tom1 = this.add.sprite(400, 400, 'placeholder');
+    ui.graphics.tom2 = this.add.sprite(500, 400, 'placeholder');
+    ui.graphics.kick = this.add.sprite(700, 400, 'placeholder');
+    ui.graphics.kick.scaleX = 6;
 
     ui.text = {};
     ui.text.timeOff = this.add.text(200, 300, sceneVars.timeOff, { fontFamily: 'Arial', fontSize: 18, color: '#FFFFFF' });
+    ui.text.snare = this.add.text(295, 390, 'X', { fontFamily: 'Arial', fontSize: 18, color: '#FFFFFF' });
+    ui.text.tom1 = this.add.text(395, 390, 'C', { fontFamily: 'Arial', fontSize: 18, color: '#FFFFFF' });
+    ui.text.tom2 = this.add.text(495, 390, 'V', { fontFamily: 'Arial', fontSize: 18, color: '#FFFFFF' });
+    ui.text.kick = this.add.text(665, 390, 'SPACE', { fontFamily: 'Arial', fontSize: 18, color: '#FFFFFF' });
 
   };
 
@@ -93,7 +110,7 @@
     var samples =  sceneVars.samples;
     //var player = new Tone.Player('./assets/audio/drums/hihat.ogg').toMaster();
 
-    var loop = new Tone.Pattern(function(time){
+    /*var loop = new Tone.Pattern(function(time){
     //  player.start();
     //  samples.hihat.play();
 
@@ -106,31 +123,58 @@
         ui.graphics.beat.tint = 0xFFFFFF;
       }, time + 0.1);
     }).start(0);
-    loop.interval = "2n";
+    loop.interval = "2n";*/
 
-    var kickPattern = "4n";
     var kickLoop = new Tone.Pattern(function(time) {
       Tone.Draw.schedule(function(){
-        var note = this.add.sprite(this.cameras.main.width, this.cameras.main.height/2, 'placeholder');
-        console.log(note);
+        var note = this.add.sprite(this.sceneVars.ui.graphics.kick.x, 100, 'placeholder');
+        sceneVars.ui.graphics.notes.kick.push(note);
+        note.scaleX = 6;
         var tween = this.tweens.add({
           targets: note,
           props: {
-            x: {value: '-=500', duration: 2000, ease: 'Linear'}
+            y: {value: '+=500', duration: 2000, ease: 'Linear'}
           }
         });
       }.bind(this), time);
     }.bind(this)).start(0);
 
-    kickLoop.interval = "4n";
-    Tone.Transport.start("+0.01");
+    kickLoop.interval = "2n";
 
+    var snareLoop = new Tone.Pattern(function(time) {
+      Tone.Draw.schedule(function(){
+        var note = this.add.sprite(this.sceneVars.ui.graphics.snare.x, 100, 'placeholder');
+        sceneVars.ui.graphics.notes.snare.push(note);
+        var tween = this.tweens.add({
+          targets: note,
+          props: {
+            y: {value: '+=500', duration: 2000, ease: 'Linear'}
+          }
+        });
+      }.bind(this), time);
+    }.bind(this)).start(0.5);
+
+    snareLoop.interval = "2n";
+
+    Tone.Transport.start("+0.01");
   };
 
   Drums.createInput = function() {
     this.input.keyboard.on('keydown_X', function (event) {
       sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
       sceneVars.samples.snare.play();
+      console.log(sceneVars.ui.graphics.notes.snare);
+      if (!sceneVars.ui.graphics.notes.snare.length) {
+        return; // Bad! There's no notes!
+      }
+      var currentSnareNote = sceneVars.ui.graphics.notes.snare.shift();
+      if (Math.abs(currentSnareNote.y - sceneVars.ui.graphics.snare.y) < 75) {
+        sceneVars.score += 10;
+      }
+      else {
+        // Mute music track
+      }
+      currentSnareNote.destroy();
     });
     this.input.keyboard.on('keydown_C', function (event) {
       sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
@@ -143,6 +187,18 @@
     this.input.keyboard.on('keydown_SPACE', function (event) {
       sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
       sceneVars.samples.kick.play();
+      if (!sceneVars.ui.graphics.notes.kick.length) {
+        return; // Bad! There's no notes!
+      }
+      var currentKickNote = sceneVars.ui.graphics.notes.kick.shift();
+
+      if (Math.abs(currentKickNote.y - sceneVars.ui.graphics.kick.y) < 60) {
+        sceneVars.score += 10;
+      }
+      else {
+        // Mute music track
+      }
+      currentKickNote.destroy();
     });
   };
 
@@ -151,13 +207,22 @@
    */
   Drums.update = function() {
     this.updateUi();
+    Object.keys(sceneVars.ui.graphics.notes).forEach(function(noteType) {
+      sceneVars.ui.graphics.notes[noteType].forEach(function(note, idx) {
+        if (note.y >= this.cameras.main.height) {
+          note.destroy();
+          sceneVars.ui.graphics.notes[noteType].splice(idx, 1);
+        }
+      }, this);
+    }, this);
   };
 
   /**
    * Update UI
    */
   Drums.updateUi = function() {
-    if (sceneVars.timeOff > 500) {
+    sceneVars.ui.text.timeOff.setText(sceneVars.score);
+    /*if (sceneVars.timeOff > 500) {
       sceneVars.timeOff = - (1000 - sceneVars.timeOff);
     }
     var absDelta = Math.abs(sceneVars.timeOff);
@@ -170,8 +235,7 @@
     else {
       sceneVars.ui.text.timeOff.tint = 0xFF0000;
     }
-    sceneVars.ui.text.timeOff.setText(sceneVars.timeOff);
-
+    */
   };
 
   window.DrumsScene = Drums;
