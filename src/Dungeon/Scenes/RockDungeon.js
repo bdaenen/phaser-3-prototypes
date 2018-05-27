@@ -173,14 +173,13 @@
 
   function markBlockPadDown(block, blockPad) {
     if (!blockPad.isPushed) {
-      console.log('down!');
       blockPad.isPushed = true;
       blockPad.pushedBy = block;
     }
   }
 
   function markBlockPadUp (block, blockPad) {
-    console.log('up!');
+
   }
 
   /**
@@ -226,6 +225,15 @@
     }
 
     updateCameraPosition(this.cameras.main, this);
+    updateMovement();
+
+    sceneVars.doorKeys.forEach(function(key){
+      this.physics.world.overlap(sceneVars.player, key, pickupKey);
+    }, this);
+
+    // This is handled by the player's input events for now
+    //this.updateSkills();
+
     updateBlockState.call(this);
 
     if (!sceneVars.roomSolved) {
@@ -235,18 +243,6 @@
       }
     }
 
-
-    updateMovement();
-
-
-    sceneVars.doorKeys.forEach(function(key){
-      this.physics.world.overlap(sceneVars.player, key, pickupKey);
-    }, this);
-
-
-    // This is handled by the player's input events for now
-    //this.updateSkills();
-
     // After the first update our game was fully "set up".
     sceneVars.inited = true;
   };
@@ -254,7 +250,6 @@
   /*RockDungeon.updateSkills = function() {
     var player = sceneVars.player;
     var blocks = sceneVars.blocks;
-
   };*/
 
   function updateBlockState() {
@@ -399,7 +394,10 @@
         tile.tilemapLayer.removeTileAt(tile.x, tile.y);
       }
     }, this);
+    sceneVars.roomSolved = true;
 
+    this.scene.switch('Drums');
+    this.scene.sleep();
   }
 
 

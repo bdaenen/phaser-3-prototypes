@@ -163,7 +163,6 @@
     this.input.keyboard.on('keydown_X', function (event) {
       sceneVars.timeOff = window.performance.now() - sceneVars.curTime;
       sceneVars.samples.snare.play();
-      console.log(sceneVars.ui.graphics.notes.snare);
       if (!sceneVars.ui.graphics.notes.snare.length) {
         return; // Bad! There's no notes!
       }
@@ -215,6 +214,11 @@
         }
       }, this);
     }, this);
+
+    if (sceneVars.score >= 100) {
+      this.scene.wake('RockDungeon');
+      this.scene.remove();
+    }
   };
 
   /**
@@ -237,6 +241,8 @@
     }
     */
   };
+
+  // TODO: clean up Tone on destroy.
 
   window.DrumsScene = Drums;
 }());
