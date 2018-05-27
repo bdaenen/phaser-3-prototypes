@@ -395,9 +395,6 @@
       }
     }, this);
     sceneVars.roomSolved = true;
-
-    this.scene.switch('Drums');
-    this.scene.sleep();
   }
 
 

@@ -53,45 +53,59 @@
    * @param player
    */
   window.PlayerFactory.prototype.initEvents = function(player) {
+    this.scene.input.keyboard.on('keydown_X', function (event) {
+      if (!this.scene.scene.settings.active) {
+        return;
+      }
+
+      this.scene.scene.launch('Drums');
+      this.scene.events.on('wake', function() {
+        this.moveBlocks(player);
+      }, this);
+
+      this.scene.scene.pause();
+    }, this);
+  };
+
+  // TODO: move this to a skill
+  window.PlayerFactory.prototype.moveBlocks = function(player) {
     var tilesetConfig = window.tilesetConfig[this.scene.tilesetName];
     var margin = 5;
     var moveRange = tilesetConfig.tileWidth + margin;
 
-    this.scene.input.keyboard.on('keydown_X', function (event) {
-      var blocks = this.scene.sceneVars.blocks;
-      var nearbyBlocks = [];
-      var rect = new Phaser.Geom.Rectangle(player.x - moveRange, player.y - moveRange, moveRange*2, moveRange*2);
+    var blocks = this.scene.sceneVars.blocks;
+    var nearbyBlocks = [];
+    var rect = new Phaser.Geom.Rectangle(player.x - moveRange, player.y - moveRange, moveRange*2, moveRange*2);
 
-      // Find nearby blocks
-      blocks.forEach(function(block){
-        if (rect.contains(block.x, block.y)) {
-          nearbyBlocks.push(block);
+    // Find nearby blocks
+    blocks.forEach(function(block){
+      if (rect.contains(block.x, block.y)) {
+        nearbyBlocks.push(block);
+      }
+    }, this);
+
+    // Move the nearby blocks in the correct direction
+    nearbyBlocks.forEach(function(block){
+      var deltaX = block.x - player.x;
+      var deltaY = block.y - player.y;
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX > 0) {
+          block.x += tilesetConfig.tileWidth;
         }
-      }, this);
-
-      // Move the nearby blocks in the correct direction
-      nearbyBlocks.forEach(function(block){
-        var deltaX = block.x - player.x;
-        var deltaY = block.y - player.y;
-
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-          if (deltaX > 0) {
-            block.x += tilesetConfig.tileWidth;
-          }
-          else if (deltaX < 0) {
-            block.x -= tilesetConfig.tileWidth;
-          }
+        else if (deltaX < 0) {
+          block.x -= tilesetConfig.tileWidth;
         }
-        else if (Math.abs(deltaY) > Math.abs(deltaX)) {
-          if (deltaY > 0) {
-            block.y += tilesetConfig.tileHeight;
-          }
-          else if (deltaY < 0) {
-            block.y -= tilesetConfig.tileHeight;
-          }
+      }
+      else if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        if (deltaY > 0) {
+          block.y += tilesetConfig.tileHeight;
         }
+        else if (deltaY < 0) {
+          block.y -= tilesetConfig.tileHeight;
+        }
+      }
 
-      }, this);
     }, this);
   };
 }());
