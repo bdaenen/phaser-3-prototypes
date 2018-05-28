@@ -397,6 +397,5 @@
     sceneVars.roomSolved = true;
   }
 
-
   window.RockDungeonScene = RockDungeon;
 }());

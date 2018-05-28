@@ -117,14 +117,41 @@
     this.sceneVars.ui = ui;
   };
 
-  /**
-   *
-   */
-  Drums.createDrumPattern = function() {
-    var ui = sceneVars.ui;
-    var samples =  sceneVars.samples;
+  Drums.queueNotes = function (times, type) {
+    var time = times.shift();
+    var toneTime = new Tone.Time(time);
+    if (type == 'snare') {
+      console.log(toneTime.toSeconds());
+    }
+    var timedEvent = this.time.delayedCall(toneTime.toSeconds()*1000, function() {
+      this.spawnNotes(type);
+      if (times.length) {
+        this.queueNotes(times, type);
+      }
+    }.bind(this), [], this);
+  };
 
-    var kickLoop = new Tone.Pattern(function(time) {
+  Drums.createRandomPattern = function() {
+    var rnd = Math.random();
+    var kickTimes;
+    var snareTimes;
+
+    if (rnd <= (1/3)) {
+      kickTimes = ['4n', '8n', '4n'];
+      snareTimes = ['2n', '4n', '4n'];
+    }
+    else if (rnd <= (2/3)) {
+      kickTimes = ['2n', '4n', '4n'];
+      snareTimes = ['4n', '8n', '4n'];
+    }
+    else {
+      kickTimes = [.500, .500,     .500, .500,   .500, .500,   .500];
+      snareTimes = [          1.250,           1,            1];
+    }
+    this.queueNotes(kickTimes, 'kick');
+    this.queueNotes(snareTimes, 'snare');
+
+  /*  var kickLoop = new Tone.Pattern(function(time) {
       Tone.Draw.schedule(function(){
         var note = this.add.sprite(this.sceneVars.ui.graphics.kick.x, 100, 'placeholder');
         sceneVars.ui.graphics.notes.kick.push(note);
@@ -136,29 +163,29 @@
           }
         });
       }.bind(this), time);
-    }.bind(this)).start(0);
+    }.bind(this)).start(0);*/
+  };
 
-    kickLoop.interval = "2n";
+  Drums.spawnNotes = function(type) {
+    var note = this.add.sprite(this.sceneVars.ui.graphics[type].x, 100, 'placeholder');
+    sceneVars.ui.graphics.notes[type].push(note);
+    if (type === 'kick') {
+      note.scaleX = 6;
+    }
+    var tween = this.tweens.add({
+      targets: note,
+      props: {
+        y: {value: '+=500', duration: 2000, ease: 'Linear'}
+      }
+    });
+  };
+  /**
+   *
+   */
+  Drums.createDrumPattern = function() {
 
-    sceneVars.tone.loops.kick = kickLoop;
 
-    var snareLoop = new Tone.Pattern(function(time) {
-      Tone.Draw.schedule(function(){
-        var note = this.add.sprite(this.sceneVars.ui.graphics.snare.x, 100, 'placeholder');
-        sceneVars.ui.graphics.notes.snare.push(note);
-        var tween = this.tweens.add({
-          targets: note,
-          props: {
-            y: {value: '+=500', duration: 2000, ease: 'Linear'}
-          }
-        });
-      }.bind(this), time);
-    }.bind(this)).start(0.5);
-
-    snareLoop.interval = "2n";
-    sceneVars.tone.loops.snare = snareLoop;
-
-    Tone.Transport.start("+0.01");
+    this.createRandomPattern();
   };
 
   Drums.createInput = function() {
@@ -221,7 +248,7 @@
       }, this);
     }, this);
 
-    if (sceneVars.score >= 20) {
+    if (sceneVars.score >= 200) {
       var scene = this.scene.get('RockDungeon');
       scene.scene.settings.data = scene.scene.settings.data || {};
       scene.scene.settings.data.succeeded = true;
