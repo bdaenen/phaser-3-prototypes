@@ -58,12 +58,31 @@
         return;
       }
 
-      this.scene.scene.launch('Drums');
-      this.scene.events.on('wake', function() {
+      if (this.scene.registry.get('drumsSucceeded')) {
         this.moveBlocks(player);
-      }, this);
+      }
+      else {
+        this.scene.scene.launch('Drums');
+        this.scene.events.on('wake', function() {
+          if (this.scene.registry.get('drumsSucceeded')) {
+            this.moveBlocks(player);
 
-      this.scene.scene.pause();
+            // If perfect, allow free use of the ability for 5s.
+            if (this.scene.registry.get('drumsPerfect')) {
+              this.scene.time.delayedCall(5000, function() {
+                this.scene.registry.set('drumsSucceeded', false);
+                this.scene.registry.set('drumsPerfect', false);
+              }, [], this);
+            }
+            // If not, require another input check.
+            else {
+              this.scene.registry.set('drumsSucceeded', false);
+            }
+          }
+        }, this);
+
+        this.scene.scene.pause();
+      }
     }, this);
   };
 

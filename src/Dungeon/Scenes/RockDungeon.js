@@ -32,7 +32,8 @@
       { key: 'placeholder', url: 'placeholder.png' },
       { key: 'placeholder-borderless', url: 'placeholder_borderless.png' },
       { key: 'dungeon', url: 'dungeon.png' },
-      { key: 'key', url: 'key.png' }
+      { key: 'key', url: 'key.png' },
+      {key: 'snare', url: 'snare-ui.png'}
     ],
     spritesheet: [
       { key: 'dungeon-sprite', url: 'dungeon.png', config: { frameWidth: 32, frameHeight: 32 } }
@@ -133,13 +134,22 @@
   RockDungeon.createUi = function() {
     var ui = sceneVars.ui;
     ui.text = {};
-    ui.text.key = this.add.text(this.cameras.main.width - 48, 0, '0', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
+    ui.text.key = this.add.text(this.cameras.main.width - 48, this.cameras.main.height - 40, '0', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
     ui.text.key.setStroke('#000', 6);
     ui.text.key.setScrollFactor(0);
+
+    ui.text.snare = this.add.text(this.cameras.main.width - 128, this.cameras.main.height - 40, 'X', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
+    ui.text.snare.setStroke('#000', 6);
+    ui.text.snare.setScrollFactor(0);
 
     ui.sprites = {};
     ui.sprites.key = this.add.sprite(ui.text.key.x + 32, ui.text.key.y + 17, 'key');
     ui.sprites.key.setScrollFactor(0);
+
+    ui.sprites.snare = this.add.sprite(ui.text.snare.x - 20, ui.text.snare.y + 17, 'snare');
+    ui.sprites.snare.setScrollFactor(0);
+    ui.sprites.snare.scaleX = 0.75;
+    ui.sprites.snare.scaleY = 0.75;
   };
 
   /**
@@ -241,6 +251,13 @@
       if (sceneVars.roomSolved) {
         solveRoom.call(this);
       }
+    }
+
+    if (this.registry.get('drumsSucceeded')) {
+      sceneVars.ui.sprites.snare.tint = 0x00AA00;
+    }
+    else {
+      sceneVars.ui.sprites.snare.tint = 0xFFFFFF;
     }
 
     // After the first update our game was fully "set up".

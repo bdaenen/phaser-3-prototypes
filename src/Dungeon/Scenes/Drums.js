@@ -44,6 +44,7 @@
 
   Drums.initSceneVars = function() {
     sceneVars = {
+      notePositionMargin: 60,
       movementState: {},
       assets: {
         images: [
@@ -59,12 +60,15 @@
       curTime: 0,
       samples: {},
       score: 0,
+      failures: 0,
+      successes: 0,
+      numberOfNotes: 0,
       tone: {
         loops: {}
       }
     };
 
-    Drums.sceneVars = sceneVars;
+    this.sceneVars = sceneVars;
   };
 
   Drums.createSamples = function() {
@@ -120,15 +124,13 @@
   Drums.queueNotes = function (times, type) {
     var time = times.shift();
     var toneTime = new Tone.Time(time);
-    if (type == 'snare') {
-      console.log(toneTime.toSeconds());
-    }
+
     var timedEvent = this.time.delayedCall(toneTime.toSeconds()*1000, function() {
       this.spawnNotes(type);
       if (times.length) {
         this.queueNotes(times, type);
       }
-    }.bind(this), [], this);
+    }, [], this);
   };
 
   Drums.createRandomPattern = function() {
@@ -148,6 +150,8 @@
       kickTimes = [.500, .500,     .500, .500,   .500, .500,   .500];
       snareTimes = [          1.250,           1,            1];
     }
+    sceneVars.numberOfNotes += kickTimes.length;
+    sceneVars.numberOfNotes += snareTimes.length;
     this.queueNotes(kickTimes, 'kick');
     this.queueNotes(snareTimes, 'snare');
 
@@ -183,16 +187,25 @@
    *
    */
   Drums.createDrumPattern = function() {
-
-
     this.createRandomPattern();
   };
 
   Drums.createInput = function() {
-    this.input.keyboard.on('keydown_X', this.snare);
-    this.input.keyboard.on('keydown_C', this.tom1);
-    this.input.keyboard.on('keydown_V', this.tom2);
-    this.input.keyboard.on('keydown_SPACE', this.kick);
+    this.input.keyboard.on('keydown_X', this.snare, this);
+    this.input.keyboard.on('keydown_C', this.tom1, this);
+    this.input.keyboard.on('keydown_V', this.tom2, this);
+    this.input.keyboard.on('keydown_SPACE', this.kick, this);
+  };
+
+  Drums.checkNoteHit = function(type, graphic) {
+    if (Math.abs(graphic.y - sceneVars.ui.graphics[type].y) < sceneVars.notePositionMargin) {
+      sceneVars.score += 10;
+      sceneVars.successes++;
+    }
+    else {
+      sceneVars.failures++;
+      // Mute music track
+    }
   };
 
   Drums.snare = function(event) {
@@ -200,14 +213,10 @@
       if (!sceneVars.ui.graphics.notes.snare.length) {
         return; // Bad! There's no notes!
       }
-      var currentSnareNote = sceneVars.ui.graphics.notes.snare.shift();
-      if (Math.abs(currentSnareNote.y - sceneVars.ui.graphics.snare.y) < 75) {
-        sceneVars.score += 10;
-      }
-      else {
-        // Mute music track
-      }
-      currentSnareNote.destroy();
+
+    var currentSnareNote = sceneVars.ui.graphics.notes.snare.shift();
+    this.checkNoteHit('kick', currentSnareNote);
+    currentSnareNote.destroy();
   };
 
   Drums.tom1 = function (event)  {
@@ -224,13 +233,7 @@
       return; // Bad! There's no notes!
     }
     var currentKickNote = sceneVars.ui.graphics.notes.kick.shift();
-
-    if (Math.abs(currentKickNote.y - sceneVars.ui.graphics.kick.y) < 60) {
-      sceneVars.score += 10;
-    }
-    else {
-      // Mute music track
-    }
+    this.checkNoteHit('kick', currentKickNote);
     currentKickNote.destroy();
   };
 
@@ -243,21 +246,30 @@
       sceneVars.ui.graphics.notes[noteType].forEach(function(note, idx) {
         if (note.y >= this.cameras.main.height) {
           note.destroy();
+          sceneVars.failures++;
+          sceneVars.ui.graphics.notes[noteType].splice(idx, 1);
+        }
+        else if (note.y >= sceneVars.ui.graphics[noteType].y + sceneVars.notePositionMargin) {
+          //note.tint = 0xFF0000;
+          note.destroy();
+          sceneVars.failures++;
           sceneVars.ui.graphics.notes[noteType].splice(idx, 1);
         }
       }, this);
     }, this);
 
-    if (sceneVars.score >= 200) {
+    if ((sceneVars.successes + sceneVars.failures) === sceneVars.numberOfNotes) {
       var scene = this.scene.get('RockDungeon');
-      scene.scene.settings.data = scene.scene.settings.data || {};
-      scene.scene.settings.data.succeeded = true;
+      this.registry.set('drumsSucceeded', (sceneVars.failures/sceneVars.successes <= 0.2));
+      this.registry.set('drumsPerfect', sceneVars.failures === 0);
       scene.scene.wake();
-      //debugger;
       this.sys.shutdown();
     }
   };
 
+  /**
+   * Clean up.
+   */
   Drums.shutdown = function() {
     // Shutdown input
     this.input.keyboard.off('keydown_X', this.snare);
@@ -285,7 +297,7 @@
    * Update UI
    */
   Drums.updateUi = function() {
-    sceneVars.ui.text.score.setText(sceneVars.score);
+    sceneVars.ui.text.score.setText(Math.round((sceneVars.successes/sceneVars.numberOfNotes*100)) + '/' + 100 + '%' + '\n' + '>80% = success!');
   };
 
   window.DrumsScene = Drums;
