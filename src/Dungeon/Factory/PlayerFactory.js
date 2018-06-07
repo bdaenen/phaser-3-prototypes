@@ -62,7 +62,7 @@
         this.moveBlocks(player);
       }
       else {
-        this.scene.scene.launch('Drums');
+        this.scene.scene.launch('Drums', {transitionTo: this.scene});
         this.scene.events.on('wake', function() {
           if (this.scene.registry.get('drumsSucceeded')) {
             this.moveBlocks(player);

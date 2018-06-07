@@ -6,23 +6,12 @@
   var DEPTH_FOREGROUND = 10;
   var sceneVars = {
     movementState: {},
-    assets: {},
     ui: {},
-    enemies: []
+    enemies: [],
+    sounds: {}
   };
 
   Battle.sceneVars = sceneVars;
-
-  /**
-   * @type {{images: [null,null,null,null], spritesheet: [null]}}
-   */
-  sceneVars.assets = {
-    images: [
-      { key: 'placeholder', url: 'placeholder.png' },
-      { key: 'placeholder-borderless', url: 'placeholder_borderless.png' },
-      { key: 'key', url: 'key.png' }
-    ]
-  };
 
   Battle.tilesetName = 'dungeon';
 
@@ -31,17 +20,63 @@
    */
   Battle.preload = function() {
     this.load.setPath('./assets/');
-    sceneVars.assets.images.forEach(function(file){
+    [
+      {key: 'placeholder', url: 'placeholder.png'},
+      {key: 'placeholder-borderless', url: 'placeholder_borderless.png'},
+      {key: 'key', url: 'key.png'}
+    ].forEach(function(file){
       this.load.image(file.key, file.url);
     }, this);
+
+    this.load.audio('base', 'audio/itc/base.wav');
+    this.load.audio('transition', 'audio/itc/transition.wav');
+    this.load.audio('ability', 'audio/itc/ability.wav');
   };
 
   /**
    * Main create function
    */
   Battle.create = function() {
+    this.initSceneVars();
     sceneVars.keys = this.input.keyboard.createCursorKeys();
     this.createUi();
+    sceneVars.sounds.base = this.sound.add('base');
+
+    sceneVars.sounds.transition = this.sound.add('transition');
+    sceneVars.sounds.ability = this.sound.add('ability');
+    sceneVars.sounds.base.on('play', function(){
+      sceneVars.baseStartTimeMs = window.performance.now();
+    }, this);
+
+    sceneVars.sounds.base.play({
+      loop: true
+    });
+  };
+
+  /**
+   *
+   */
+  Battle.initSceneVars = function() {
+    sceneVars = {
+      movementState: {},
+      ui: {},
+      enemies: [],
+      sounds: {},
+      bpm: 155
+    };
+
+    Object.defineProperty(sceneVars, 'beatTimeS', {
+      get: function(){
+        return 60/this.bpm;
+      }
+    });
+    Object.defineProperty(sceneVars, 'beatTimeMs', {
+      get: function(){
+        return this.beatTimeS*1000;
+      }
+    });
+
+    this.sceneVars = sceneVars;
   };
 
   /**
@@ -58,9 +93,9 @@
     ui.graphics.attack = this.add.sprite(atkX, atkY, 'placeholder-borderless');
     ui.graphics.attack.tint = 0x585858;
     ui.graphics.attack.displayWidth = buttonW;
-    ui.graphics.defend = this.add.sprite(atkX + ui.graphics.attack.displayWidth + 30, atkY, 'placeholder-borderless');
-    ui.graphics.defend.tint = 0x585858;
-    ui.graphics.defend.displayWidth = buttonW;
+    ui.graphics.skills = this.add.sprite(atkX + ui.graphics.attack.displayWidth + 30, atkY, 'placeholder-borderless');
+    ui.graphics.skills.tint = 0x585858;
+    ui.graphics.skills.displayWidth = buttonW;
 
 
     ui.text = {};
@@ -68,13 +103,13 @@
     ui.text.attack.x -= ui.text.attack.width / 2;
     ui.text.attack.y -= ui.text.attack.height / 2;
 
-    ui.text.defend = this.add.text(ui.graphics.defend.x, ui.graphics.defend.y, 'Defend', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
-    ui.text.defend.x -= ui.text.defend.width / 2;
-    ui.text.defend.y -= ui.text.defend.height / 2;
+    ui.text.skills = this.add.text(ui.graphics.skills.x, ui.graphics.skills.y, 'Drum!', { fontFamily: 'Arial', fontSize: 24, color: '#FFFFFF' });
+    ui.text.skills.x -= ui.text.skills.width / 2;
+    ui.text.skills.y -= ui.text.skills.height / 2;
 
     ui.buttons = [];
     ui.buttons.push({box: ui.graphics.attack, text: ui.text.attack});
-    ui.buttons.push({box: ui.graphics.defend, text: ui.text.defend});
+    ui.buttons.push({box: ui.graphics.skills, text: ui.text.skills});
 
     ui.vars = {
       buttonW: buttonW,
@@ -95,7 +130,7 @@
   };
 
 
-  Battle.defend = function() {
+  Battle.skills = function() {
     console.warn('Defending is not yet implemented');
   };
 
@@ -105,14 +140,41 @@
   Battle.activateSelectedMenuItem = function() {
     var activeIndex = sceneVars.ui.vars.activeIndex;
     if (activeIndex === 0) {
-      console.log('drums');
-      this.scene.start('drums');
-      console.log(this.scene.isActive('drums'));
       //this.scene.pause();
+      console.warn('Not Yet Implemented');
     }
     if (activeIndex === 1) {
-      // Defend
-      console.warn('Not Yet Implemented');
+      // DRUM
+      console.log('launch');
+      var kicks = [];
+      for (var i = 1;i <= 100; i++) {
+        if (i === 1) {
+          var now = window.performance.now();
+          var delta = now - sceneVars.baseStartTimeMs;
+          delta %= sceneVars.beatTimeMs;
+          kicks.push((sceneVars.beatTimeMs+delta)/1000);
+        }
+        else {
+          kicks.push(sceneVars.beatTimeS);
+        }
+      }
+      console.log(kicks);
+      var pattern = {
+        kick: kicks
+      };
+      this.scene.launch('Drums', {pattern: pattern, bpm: sceneVars.bpm});
+      // sceneVars.sounds.base.once('looped', function(){
+      //   sceneVars.sounds.base.stop();
+      //   sceneVars.sounds.transition.play();
+      //   sceneVars.sounds.transition.once('ended', function() {
+      //     sceneVars.sounds.ability.play();
+      //     sceneVars.sounds.ability.once('ended', function(){
+      //       sceneVars.sounds.base.play({
+      //         loop: true
+      //       });
+      //     });
+      //   });
+      // });
     }
     if (activeIndex === 2) {
       // Run
