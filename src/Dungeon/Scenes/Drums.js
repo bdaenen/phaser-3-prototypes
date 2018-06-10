@@ -33,6 +33,7 @@
     this.transitionTo = data.transitionTo;
     this.pattern = data.pattern;
     this.bpm = data.bpm;
+    this.startTime = data.startTime;
   };
 
   /**
@@ -134,8 +135,16 @@
   Drums.queueNotes = function (times, type) {
     var time = times.shift();
     var toneTime = new Tone.Time(time);
+    var delayTime = toneTime.toSeconds()*1000;
+    if (this.startTime) {
+        var now = window.performance.now();
+        var delta = now - this.startTime;
+        delta %= (this.beatTimeMs*2);
+        delayTime += delta;
+        this.startTime = null;
+    }
 
-    var timedEvent = this.time.delayedCall(toneTime.toSeconds()*1000, function() {
+    var timedEvent = this.time.delayedCall(delayTime, function() {
       this.spawnNotes(type);
       if (times.length) {
         this.queueNotes(times, type);
@@ -183,13 +192,16 @@
 
   Drums.queuePattern = function() {
     Object.keys(this.pattern).forEach(function(type) {
-      sceneVars.numberOfNotes += this.pattern[type].length;
-      this.queueNotes(this.pattern[type], type);
+      if (this.pattern[type].length) {
+        sceneVars.numberOfNotes += this.pattern[type].length;
+        this.queueNotes(this.pattern[type], type);
+      }
     }, this);
   };
 
   Drums.spawnNotes = function(type) {
     var note = this.add.sprite(this.sceneVars.ui.graphics[type].x, 100, 'placeholder');
+    var scene = this;
     sceneVars.ui.graphics.notes[type].push(note);
     if (type === 'kick') {
       note.scaleX = 6;
@@ -197,7 +209,21 @@
     var tween = this.tweens.add({
       targets: note,
       props: {
-        y: {value: '+=500', duration: this.beatTimeMs*5, ease: 'Linear'}
+        y: {value: sceneVars.ui.graphics[type].y, duration: this.beatTimeMs*4, ease: 'Linear'}
+      },
+      onComplete: function () {
+        if (note && note.active) {
+          scene.tweens.add({
+            targets: note,
+            props: {
+              y: {
+                value: '+=' + Math.abs(100 - sceneVars.ui.graphics[type].y),
+                duration: scene.beatTimeMs * 4,
+                ease: 'Linear'
+              }
+            }
+          });
+        }
       }
     });
   };

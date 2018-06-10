@@ -8,7 +8,12 @@
     movementState: {},
     ui: {},
     enemies: [],
-    sounds: {}
+    sounds: {},
+    groove: {
+      player: 0,
+      enemy: 0
+    },
+    enemy: null
   };
 
   Battle.sceneVars = sceneVars;
@@ -62,7 +67,13 @@
       ui: {},
       enemies: [],
       sounds: {},
-      bpm: 155
+      bpm: 156,
+      groove: {
+        players: {
+        },
+        enemies: {
+        }
+      }
     };
 
     Object.defineProperty(sceneVars, 'beatTimeS', {
@@ -146,23 +157,17 @@
     if (activeIndex === 1) {
       // DRUM
       console.log('launch');
-      var kicks = [];
-      for (var i = 1;i <= 100; i++) {
-        if (i === 1) {
-          var now = window.performance.now();
-          var delta = now - sceneVars.baseStartTimeMs;
-          delta %= sceneVars.beatTimeMs;
-          kicks.push((sceneVars.beatTimeMs+delta)/1000);
-        }
-        else {
-          kicks.push(sceneVars.beatTimeS);
-        }
-      }
-      console.log(kicks);
       var pattern = {
-        kick: kicks
+        kick: [],
+        snare: [],
+        tom1: []
       };
-      this.scene.launch('Drums', {pattern: pattern, bpm: sceneVars.bpm});
+
+      for (var i = 1;i <= 10; i++) {
+        pattern['kick'].push(sceneVars.beatTimeS*2);
+      }
+
+      this.scene.launch('Drums', {startTime: sceneVars.baseStartTimeMs ,pattern: pattern, bpm: sceneVars.bpm});
       // sceneVars.sounds.base.once('looped', function(){
       //   sceneVars.sounds.base.stop();
       //   sceneVars.sounds.transition.play();
