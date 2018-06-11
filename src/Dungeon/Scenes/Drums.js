@@ -32,7 +32,7 @@
     data = data || {};
     this.transitionTo = data.transitionTo;
     this.pattern = data.pattern;
-    this.bpm = data.bpm;
+    this.bpm = data.bpm || 150;
     this.startTime = data.startTime;
   };
 

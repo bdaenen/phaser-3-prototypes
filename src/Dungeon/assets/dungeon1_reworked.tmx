@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.1.2" orientation="orthogonal" renderorder="right-down" width="62" height="51" tilewidth="32" tileheight="32" infinite="0" nextobjectid="28">
+<map version="1.0" tiledversion="1.1.2" orientation="orthogonal" renderorder="right-down" width="62" height="51" tilewidth="32" tileheight="32" infinite="0" nextobjectid="30">
  <tileset firstgid="1" source="dungeon.tsx"/>
  <tileset firstgid="235" name="collision" tilewidth="32" tileheight="32" tilecount="4" columns="4">
   <image source="collision.png" width="128" height="32"/>
@@ -347,5 +347,6 @@
   <object id="25" name="blockPad" type="blockPad" gid="45" x="1314" y="1024" width="32" height="32"/>
   <object id="26" name="blockPad" type="blockPad" gid="45" x="1186" y="833.5" width="32" height="32"/>
   <object id="27" name="blockPad" type="blockPad" gid="45" x="1312" y="831.5" width="32" height="32"/>
+  <object id="28" name="enemy" type="enemy" x="1377.33" y="194.667" width="30.6667" height="29.3333"/>
  </objectgroup>
 </map>

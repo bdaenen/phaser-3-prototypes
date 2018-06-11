@@ -19,7 +19,8 @@
     blocksInRoom: [],
     blockPadsInRoom: [],
     roomSolved: false,
-    blockPadsSolvedInRoomCount: 0
+    blockPadsSolvedInRoomCount: 0,
+    enemies: null
   };
 
   RockDungeon.sceneVars = sceneVars;
@@ -106,6 +107,9 @@
     sceneVars.blocks = sceneVars.map.createFromObjects('objects', 'block', {key: 'dungeon-sprite', frame: tilesetConfig[this.tilesetName].block});
     sceneVars.blocks.forEach(createBlock, this);
 
+    sceneVars.enemies = sceneVars.map.createFromObjects('objects', 'enemy', {key: 'key'});
+    sceneVars.enemies.forEach(createEnemy, this);
+
     this.physics.add.collider(sceneVars.player, collisionLayer);
     this.physics.add.collider(sceneVars.player, tileObjectLayer, this.objectCollision, null, this);
     this.physics.add.collider(sceneVars.blocks, sceneVars.blocks);
@@ -181,6 +185,11 @@
     blockPad.setDepth(DEPTH_BACKGROUND);
   }
 
+  function createEnemy(enemy) {
+    this.physics.world.enable(enemy);
+    enemy.visible = true;
+  }
+
   function markBlockPadDown(block, blockPad) {
     if (!blockPad.isPushed) {
       blockPad.isPushed = true;
@@ -239,6 +248,10 @@
 
     sceneVars.doorKeys.forEach(function(key){
       this.physics.world.overlap(sceneVars.player, key, pickupKey);
+    }, this);
+
+    sceneVars.enemies.forEach(function(enemy){
+      this.physics.world.overlap(sceneVars.player, enemy, startBattleScene, null, this);
     }, this);
 
     // This is handled by the player's input events for now
@@ -412,6 +425,11 @@
       }
     }, this);
     sceneVars.roomSolved = true;
+  }
+
+  function startBattleScene() {
+    this.scene.launch('Battle', {transitionTo: this});
+    this.scene.pause();
   }
 
   window.RockDungeonScene = RockDungeon;

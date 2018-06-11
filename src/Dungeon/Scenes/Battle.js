@@ -8,17 +8,14 @@
     movementState: {},
     ui: {},
     enemies: [],
-    sounds: {},
-    groove: {
-      player: 0,
-      enemy: 0
-    },
-    enemy: null
+    players: [],
+    sounds: {}
   };
 
   Battle.sceneVars = sceneVars;
 
   Battle.tilesetName = 'dungeon';
+
 
   /**
    *
@@ -38,10 +35,20 @@
     this.load.audio('ability', 'audio/itc/ability.wav');
   };
 
+  Battle.init = function(data) {
+    this.transitionTo = data.transitionTo;
+  };
+
   /**
    * Main create function
    */
   Battle.create = function() {
+    var bg = this.add.image(100, 100, 'placeholder');
+    bg.tint = 0x585858;
+    // We just want a bg color
+    bg.scaleY = 25;
+    bg.scaleX = 44;
+
     this.initSceneVars();
     sceneVars.keys = this.input.keyboard.createCursorKeys();
     this.createUi();
@@ -56,6 +63,13 @@
     sceneVars.sounds.base.play({
       loop: true
     });
+
+    this.createPlayers();
+  };
+
+  Battle.createPlayers = function() {
+    var f = new window.BattleFactory(this);
+    f.createPlayer(200, this.cameras.main.height - 200, 'placeholder', 1, 1);
   };
 
   /**
